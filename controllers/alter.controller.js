@@ -1,6 +1,6 @@
 // ⚠️ OLD MODELS USE PANROM – change panna vendam
-import Service from "../models/addservice.model.js";
-import Category from "../models/addcategory.model.js";
+import Service from "../models/service.model.js";
+import Category from "../models/addCategory.model.js";
 
 /**
  * GET ALL SERVICES
