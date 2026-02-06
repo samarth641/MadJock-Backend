@@ -5,7 +5,7 @@ import { generateOtp } from "../utils/generateOtp.js";
 import { sendOtpSms } from "../utils/sendOtpSms.js";
 
 /* ===============================
-   SEND OTP
+   SEND OTP (ONLY FOR REGISTERED USERS)
    =============================== */
 export const sendOtp = async (req, res) => {
   try {
@@ -18,14 +18,25 @@ export const sendOtp = async (req, res) => {
       });
     }
 
+    // ✅ CHECK: User must already exist (registered)
+    const user = await User.findOne({ phone });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not registered. Please register first.",
+      });
+    }
+
     const otp = generateOtp();
 
+    // Clear old OTPs
     await Otp.deleteMany({ phone });
 
     await Otp.create({
       phone,
       otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 min
     });
 
     await sendOtpSms(phone, otp);
@@ -46,7 +57,7 @@ export const sendOtp = async (req, res) => {
 };
 
 /* ===============================
-   VERIFY OTP
+   VERIFY OTP (NO AUTO USER CREATE)
    =============================== */
 export const verifyOtp = async (req, res) => {
   try {
@@ -76,18 +87,20 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
+    // OTP valid → delete it
     await Otp.deleteMany({ phone });
 
-    let user = await User.findOne({ phone });
-    let isRegistered = true;
+    // ✅ CHECK: User MUST exist
+    const user = await User.findOne({ phone });
 
     if (!user) {
-      // 🔹 New user default role = user
-      user = await User.create({ phone, role: "user" });
-      isRegistered = false;
+      return res.status(404).json({
+        success: false,
+        message: "User not registered. Please register first.",
+      });
     }
 
-    // 🔥 NEW CHECK: SALES PERSON NEEDS ADMIN APPROVAL
+    // 🔥 SALES PERSON NEEDS ADMIN APPROVAL
     if (user.role === "sales" && user.approved === false) {
       return res.status(403).json({
         success: false,
@@ -110,7 +123,7 @@ export const verifyOtp = async (req, res) => {
       message: "OTP verified successfully",
       token,
       user,
-      isRegistered,
+      isRegistered: true,
     });
   } catch (error) {
     console.error("❌ VERIFY OTP ERROR:", error.message);
@@ -122,7 +135,7 @@ export const verifyOtp = async (req, res) => {
 };
 
 /* ===============================
-   REGISTER USER  ✅ NEW
+   REGISTER USER
    =============================== */
 export const registerUser = async (req, res) => {
   try {
@@ -135,19 +148,23 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ phone });
+    // ✅ Check if user already exists
+    let user = await User.findOne({ phone });
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Please login again",
+      // Create new user on register
+      user = await User.create({
+        phone,
+        name,
+        email,
+        role: "user",
       });
+    } else {
+      // Update existing user
+      user.name = name;
+      user.email = email;
+      await user.save();
     }
-
-    user.name = name;
-    user.email = email;
-
-    await user.save();
 
     return res.status(200).json({
       success: true,
