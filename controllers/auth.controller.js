@@ -57,7 +57,7 @@ export const sendOtp = async (req, res) => {
 };
 
 /* ===============================
-   VERIFY OTP (CHECK APPROVAL)
+   VERIFY OTP (FIRST TIME ONLY)
    =============================== */
 export const verifyOtp = async (req, res) => {
   try {
@@ -87,7 +87,7 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // OTP valid → delete it
+    // OTP valid → delete it (IMPORTANT)
     await Otp.deleteMany({ phone });
 
     // ✅ User must exist
@@ -100,7 +100,7 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // 🔒 ADMIN APPROVAL REQUIRED FOR EVERYONE
+    // 🔒 If not approved → tell frontend to wait
     if (user.approved === false) {
       return res.status(403).json({
         success: false,
@@ -108,6 +108,7 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
+    // ✅ Approved → issue token
     const token = jwt.sign(
       {
         id: user._id,
@@ -128,6 +129,64 @@ export const verifyOtp = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "OTP verification failed",
+    });
+  }
+};
+
+/* ===============================
+   CHECK APPROVAL STATUS (NO OTP)
+   =============================== */
+export const checkApproval = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone required",
+      });
+    }
+
+    const user = await User.findOne({ phone });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Still not approved
+    if (user.approved === false) {
+      return res.status(200).json({
+        success: false,
+        approved: false,
+        message: "Still waiting for approval",
+      });
+    }
+
+    // ✅ Now approved → issue token
+    const token = jwt.sign(
+      {
+        id: user._id,
+        phone: user.phone,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      approved: true,
+      message: "User approved",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.error("❌ CHECK APPROVAL ERROR:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to check approval",
     });
   }
 };
