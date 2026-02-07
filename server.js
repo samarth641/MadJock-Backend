@@ -4,7 +4,7 @@ import cors from "cors";
 
 dotenv.config();
 
-// ================= DB =================
+// ================= DB  =================
 import connectDB from "./config/db.js";
 
 // ================= ROUTES =================

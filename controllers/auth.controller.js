@@ -5,7 +5,7 @@ import { generateOtp } from "../utils/generateOtp.js";
 import { sendOtpSms } from "../utils/sendOtpSms.js";
 
 /* ===============================
-   SEND OTP (ONLY FOR REGISTERED USERS)
+   SEND OTP  (ONLY FOR REGISTERED USERS)
    =============================== */
 export const sendOtp = async (req, res) => {
   try {

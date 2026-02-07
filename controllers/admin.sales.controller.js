@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 
 // ===============================
-// GET ALL PENDING USERS (approved = false)
+// GET ALL PENDING USERS  (approved = false)
 // ===============================
 export const getAllSalesPersons = async (req, res) => {
   try {

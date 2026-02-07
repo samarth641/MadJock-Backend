@@ -14,7 +14,7 @@ const router = express.Router();
 router.get("/pending", getAllSalesPersons);
 
 // ===============================
-// (NOT USED) REQUEST - keep for safety
+// (NOT USED) REQUEST  - keep for safety
 // ===============================
 router.post("/request", requestSalesPerson);
 
