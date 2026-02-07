@@ -18,7 +18,6 @@ export const sendOtp = async (req, res) => {
       });
     }
 
-    // ✅ User must already exist
     const user = await User.findOne({ phone });
 
     if (!user) {
@@ -57,7 +56,7 @@ export const sendOtp = async (req, res) => {
 };
 
 /* ===============================
-   VERIFY OTP (FIRST TIME ONLY)
+   VERIFY OTP (WITH APPROVAL FLOW)
    =============================== */
 export const verifyOtp = async (req, res) => {
   try {
@@ -87,10 +86,6 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // OTP valid → delete it (IMPORTANT)
-    await Otp.deleteMany({ phone });
-
-    // ✅ User must exist
     const user = await User.findOne({ phone });
 
     if (!user) {
@@ -100,7 +95,7 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // 🔒 If not approved → tell frontend to wait
+    // 🔒 If NOT approved → DO NOT DELETE OTP
     if (user.approved === false) {
       return res.status(403).json({
         success: false,
@@ -108,7 +103,9 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // ✅ Approved → issue token
+    // ✅ Now approved → DELETE OTP
+    await Otp.deleteMany({ phone });
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -134,64 +131,6 @@ export const verifyOtp = async (req, res) => {
 };
 
 /* ===============================
-   CHECK APPROVAL STATUS (NO OTP)
-   =============================== */
-export const checkApproval = async (req, res) => {
-  try {
-    const { phone } = req.body;
-
-    if (!phone) {
-      return res.status(400).json({
-        success: false,
-        message: "Phone required",
-      });
-    }
-
-    const user = await User.findOne({ phone });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Still not approved
-    if (user.approved === false) {
-      return res.status(200).json({
-        success: false,
-        approved: false,
-        message: "Still waiting for approval",
-      });
-    }
-
-    // ✅ Now approved → issue token
-    const token = jwt.sign(
-      {
-        id: user._id,
-        phone: user.phone,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-
-    return res.status(200).json({
-      success: true,
-      approved: true,
-      message: "User approved",
-      token,
-      user,
-    });
-  } catch (error) {
-    console.error("❌ CHECK APPROVAL ERROR:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to check approval",
-    });
-  }
-};
-
-/* ===============================
    REGISTER USER
    =============================== */
 export const registerUser = async (req, res) => {
@@ -205,11 +144,9 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Check if user already exists
     let user = await User.findOne({ phone });
 
     if (!user) {
-      // Create new user (approved = false by default)
       user = await User.create({
         phone,
         name,
@@ -217,7 +154,6 @@ export const registerUser = async (req, res) => {
         approved: false,
       });
     } else {
-      // Update existing user details
       user.name = name;
       user.email = email;
       await user.save();
