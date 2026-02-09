@@ -36,11 +36,11 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🆕 SALES PERSON ID (MANUAL INPUT)
+    // 🆕 SALES PERSON ID (ASSIGNED BY ADMIN LATER)
     salesPersonId: {
       type: String,
       unique: true,
-      required: true,
+      default: null,   // ❗ not required during register
       trim: true,
     },
 
