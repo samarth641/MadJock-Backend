@@ -36,11 +36,11 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🆕 SALES PERSON ID (ASSIGNED BY ADMIN LATER)
-    salesPersonId: {
+    // 🆕 SALES ID (ASSIGNED BY ADMIN AFTER APPROVAL)
+    salesId: {
       type: String,
       unique: true,
-      default: null,   // ❗ not required during register
+      default: null, // not required during register
       trim: true,
     },
 
@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🆕 EDUCATION DOCUMENTS (store file URL / path / base64 later)
+    // 🆕 EDUCATION DOCUMENTS
     education: {
       tenth: { type: String, default: "" },
       twelfth: { type: String, default: "" },

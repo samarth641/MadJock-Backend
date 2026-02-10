@@ -1,11 +1,10 @@
 import User from "../models/User.js";
 
 // ===============================
-// GET ALL PENDING USERS  (approved = false)
+// GET ALL PENDING USERS (approved = false)
 // ===============================
 export const getAllSalesPersons = async (req, res) => {
   try {
-    // Now: return all users who are NOT approved yet
     const pendingUsers = await User.find({ approved: false }).sort({
       createdAt: -1,
     });
@@ -24,8 +23,29 @@ export const getAllSalesPersons = async (req, res) => {
 };
 
 // ===============================
-// (NOT USED ANYMORE) REQUEST SALES PERSON
-// Keeping function to avoid route crash, but not used in flow
+// GET ALL APPROVED SALES PERSONS (approved = true)
+// ===============================
+export const getApprovedSalesPersons = async (req, res) => {
+  try {
+    const approvedUsers = await User.find({ approved: true }).sort({
+      createdAt: -1,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: approvedUsers,
+    });
+  } catch (error) {
+    console.error("❌ Get approved users error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch approved users",
+    });
+  }
+};
+
+// ===============================
+// (NOT USED) REQUEST SALES PERSON
 // ===============================
 export const requestSalesPerson = async (req, res) => {
   return res.status(400).json({
@@ -35,17 +55,31 @@ export const requestSalesPerson = async (req, res) => {
 };
 
 // ===============================
-// APPROVE USER (set approved = true)
+// HELPER: GENERATE NEXT SALES ID (SP001, SP002, ...)
+// ===============================
+const generateNextSalesId = async () => {
+  const lastUser = await User.findOne({ salesId: { $exists: true, $ne: null } })
+    .sort({ createdAt: -1 })
+    .select("salesId");
+
+  if (!lastUser || !lastUser.salesId) {
+    return "SP001";
+  }
+
+  const lastNumber = parseInt(lastUser.salesId.replace("SP", ""), 10);
+  const nextNumber = lastNumber + 1;
+
+  return "SP" + String(nextNumber).padStart(3, "0");
+};
+
+// ===============================
+// APPROVE USER (set approved = true + generate salesId)
 // ===============================
 export const approveSalesPerson = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { approved: true },
-      { new: true }
-    );
+    const user = await User.findById(id);
 
     if (!user) {
       return res.status(404).json({
@@ -53,6 +87,23 @@ export const approveSalesPerson = async (req, res) => {
         message: "User not found",
       });
     }
+
+    // If already approved, just return
+    if (user.approved === true && user.salesId) {
+      return res.status(200).json({
+        success: true,
+        message: "User already approved",
+        data: user,
+      });
+    }
+
+    // Generate new Sales ID
+    const newSalesId = await generateNextSalesId();
+
+    user.approved = true;
+    user.salesId = newSalesId;
+
+    await user.save();
 
     return res.status(200).json({
       success: true,
@@ -69,7 +120,7 @@ export const approveSalesPerson = async (req, res) => {
 };
 
 // ===============================
-// REJECT USER (keep approved = false)
+// REJECT USER (set approved = false, keep salesId untouched or null)
 // ===============================
 export const rejectSalesPerson = async (req, res) => {
   try {
