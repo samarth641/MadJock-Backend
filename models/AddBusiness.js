@@ -19,6 +19,22 @@ const AddBusinessSchema = new mongoose.Schema(
     website: String,
     websiteLink: String,
 
+    // 🆕 From UI
+    products: String,
+    description: String,
+
+    gstDoc: {
+      type: String,
+      enum: ["YES", "NO"],
+      default: "NO",
+    },
+
+    businessDoc: {
+      type: String,
+      enum: ["YES", "NO"],
+      default: "NO",
+    },
+
     media: {
       banner: Object,
       logo: Object,
@@ -35,12 +51,12 @@ const AddBusinessSchema = new mongoose.Schema(
 
     // 🆕 ASSIGNED SALES PERSON
     assignedSalesPersonId: {
-      type: String, // we will store salesPersonId like: MJ2026001
+      type: String, // MJ2026001
       default: null,
       index: true,
     },
 
-    // 🆕 OPTIONAL: store user _id also (future use)
+    // 🆕 OPTIONAL: store user _id also
     assignedSalesPersonUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -49,7 +65,7 @@ const AddBusinessSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: "add-business", // 🔥 keep same collection
+    collection: "add-business",
   }
 );
 

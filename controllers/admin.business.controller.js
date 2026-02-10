@@ -34,46 +34,34 @@ export const getAllBusinesses = async (req, res) => {
 };
 
 /**
- * ADD business (USER SIDE)
+ * ADD business (USER SIDE)  ✅ UPDATED
  */
 export const addBusiness = async (req, res) => {
   try {
-    const {
-      businessName,
-      ownerName,
-      category,
-      city,
-      phone: phoneFromBody,
-      whatsapp,
-    } = req.body;
+    const { businessName, ownerName, whatsapp } = req.body;
 
-    const phoneRaw = phoneFromBody || whatsapp;
-    const phone =
-      phoneRaw !== undefined && phoneRaw !== null
-        ? String(phoneRaw).trim()
-        : "";
-
-    if (!businessName || !ownerName || !phone) {
+    if (!businessName || !ownerName || !whatsapp) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing",
       });
     }
 
-    const existing = await AddBusiness.findOne({ phone });
+    // Check duplicate by whatsapp
+    const existing = await AddBusiness.findOne({
+      whatsapp: String(whatsapp).trim(),
+    });
+
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: "Business with this phone already exists",
+        message: "Business with this WhatsApp already exists",
       });
     }
 
+    // 🔥 Save FULL payload from frontend (form + links + media + etc)
     const business = new AddBusiness({
-      businessName,
-      ownerName,
-      phone,
-      category,
-      city,
+      ...req.body,
       status: "pending",
     });
 
@@ -255,7 +243,7 @@ export const getBusinessesForSalesPerson = async (req, res) => {
       });
     }
 
-    // 🔥 FIX: use assignedSalesPersonUserId (ObjectId field)
+    // 🔥 Use assignedSalesPersonUserId (ObjectId field)
     const businesses = await AddBusiness.find({
       assignedSalesPersonUserId: salesPersonId,
       status: "approved",
