@@ -16,9 +16,7 @@ export const getAllBusinesses = async (req, res) => {
     }
 
     const sortOption =
-      status === "approved"
-        ? { updatedAt: -1 }
-        : { createdAt: -1 };
+      status === "approved" ? { updatedAt: -1 } : { createdAt: -1 };
 
     const businesses = await AddBusiness.find(filter).sort(sortOption);
 
@@ -97,7 +95,6 @@ export const addBusiness = async (req, res) => {
 
 /**
  * APPROVE business (ADMIN)
- * 🔥 OLD CODE + NEW INSERT (SAFE)
  */
 export const approveBusiness = async (req, res) => {
   try {
@@ -123,6 +120,7 @@ export const approveBusiness = async (req, res) => {
       });
     }
 
+    // Insert into FeaturedAdvertisements (if not exists)
     const alreadyFeatured = await FeaturedAdvertisement.findOne({
       businessId: updatedBusiness._id,
     });
@@ -138,8 +136,7 @@ export const approveBusiness = async (req, res) => {
 
     res.json({
       success: true,
-      message:
-        "Business approved successfully & inserted into Featured-Advertisements",
+      message: "Business approved successfully",
       data: updatedBusiness,
     });
   } catch (error) {
@@ -208,10 +205,10 @@ export const assignBusinessToSalesPerson = async (req, res) => {
       });
     }
 
-    if (!salesPersonId) {
+    if (!salesPersonId || !salesPersonUserId) {
       return res.status(400).json({
         success: false,
-        message: "salesPersonId is required",
+        message: "salesPersonId and salesPersonUserId are required",
       });
     }
 
@@ -224,8 +221,8 @@ export const assignBusinessToSalesPerson = async (req, res) => {
       });
     }
 
-    business.assignedSalesPersonId = salesPersonId;
-    business.assignedSalesPersonUserId = salesPersonUserId || null;
+    business.assignedSalesPersonId = salesPersonId; // e.g. "SP001"
+    business.assignedSalesPersonUserId = salesPersonUserId; // USER._id
 
     await business.save();
 
@@ -244,12 +241,12 @@ export const assignBusinessToSalesPerson = async (req, res) => {
 };
 
 /**
- * 🆕 GET BUSINESSES FOR A SALES PERSON (for Mobile App)
- * Params: :salesPersonId
+ * 🆕 GET BUSINESSES FOR A SALES PERSON (MOBILE APP)
+ * Params: :salesPersonId  (THIS IS USER._id)
  */
 export const getBusinessesForSalesPerson = async (req, res) => {
   try {
-    const { salesPersonId } = req.params;
+    const { salesPersonId } = req.params; // USER._id
 
     if (!salesPersonId) {
       return res.status(400).json({
@@ -258,8 +255,9 @@ export const getBusinessesForSalesPerson = async (req, res) => {
       });
     }
 
+    // 🔥 FIX: use assignedSalesPersonUserId (ObjectId field)
     const businesses = await AddBusiness.find({
-      assignedSalesPersonId: salesPersonId,
+      assignedSalesPersonUserId: salesPersonId,
       status: "approved",
     }).sort({ updatedAt: -1 });
 
