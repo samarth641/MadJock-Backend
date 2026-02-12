@@ -39,7 +39,11 @@ export const getAllBusinesses = async (req, res) => {
  */
 export const addBusiness = async (req, res) => {
   try {
-    const body = req.body;
+    const body = { ...req.body };
+
+    // 🔥 IMPORTANT: if frontend sends _id, REMOVE IT
+    delete body._id;
+
     const { businessName, ownerName, whatsapp } = body;
 
     if (!businessName || !ownerName || !whatsapp) {
@@ -49,7 +53,7 @@ export const addBusiness = async (req, res) => {
       });
     }
 
-    // Check duplicate by whatsapp (inside selectedApprovedBusiness)
+    // Check duplicate by whatsapp
     const existing = await AddBusiness.findOne({
       "selectedApprovedBusiness.contactNumber": String(whatsapp).trim(),
     });
@@ -64,21 +68,18 @@ export const addBusiness = async (req, res) => {
     // 🔥 Generate simple id like old structure (string)
     const generatedId = Date.now().toString();
 
-    // 🔥 Build EXACT OLD STRUCTURE
+    // 🔥 Build EXACT OLD STRUCTURE (WITHOUT TOUCHING MONGO _id)
     const doc = {
-      _id: generatedId, // keep string id like old sample (optional, remove if Mongo ObjectId needed)
       fileUrls: (body.media?.images || []).map((i) => i.uri),
       status: "pending", // TOP LEVEL STATUS = pending
       allowPayment: true,
-      createdAt: new Date(),
 
       selectedApprovedBusiness: {
-        // ===== SAME KEYS AS OLD STRUCTURE =====
         noOfEmployee: body.noOfEmployee || "",
         businessImages: (body.media?.images || []).map((i) => i.uri),
         twitterLink: body.twitterLink || "",
         businessLocation: body.address || "",
-        generatedid: generatedId,
+        generatedid: generatedId, // ✅ OLD STYLE STRING ID HERE
         businessDocument: body.businessDoc === "YES",
         businessLogo: body.media?.logo?.uri || "",
         websiteLink: body.websiteLink ? [body.websiteLink] : [],
@@ -90,12 +91,12 @@ export const addBusiness = async (req, res) => {
         state: body.state || "",
         businessDescription: body.description || "",
         city: body.city || "",
-        uid: "", // keep empty if not available
+        uid: "",
         pinCode: body.pincode || "",
         establishedIn: body.establishedIn || "",
         payment: false,
         paymentId: "",
-        status: "pending", // INSIDE STATUS = pending
+        status: "pending",
         productsOffered: body.products || "",
         amountPaid: 0,
         twitterAccount: body.twitter === "YES",
@@ -150,18 +151,11 @@ export const approveBusiness = async (req, res) => {
   try {
     const { businessId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(businessId) && !businessId) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid business ID",
-      });
-    }
-
     const updatedBusiness = await AddBusiness.findByIdAndUpdate(
       businessId,
       {
-        status: "approved", // top-level
-        "selectedApprovedBusiness.status": "approved", // inside
+        status: "approved",
+        "selectedApprovedBusiness.status": "approved",
       },
       { new: true }
     );
@@ -173,7 +167,6 @@ export const approveBusiness = async (req, res) => {
       });
     }
 
-    // Insert into FeaturedAdvertisements (if not exists)
     const alreadyFeatured = await FeaturedAdvertisement.findOne({
       businessId: updatedBusiness._id,
     });
@@ -208,18 +201,11 @@ export const rejectBusiness = async (req, res) => {
   try {
     const { businessId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(businessId) && !businessId) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid business ID",
-      });
-    }
-
     const updatedBusiness = await AddBusiness.findByIdAndUpdate(
       businessId,
       {
-        status: "rejected", // top-level
-        "selectedApprovedBusiness.status": "rejected", // inside
+        status: "rejected",
+        "selectedApprovedBusiness.status": "rejected",
       },
       { new: true }
     );
@@ -252,13 +238,6 @@ export const assignBusinessToSalesPerson = async (req, res) => {
   try {
     const { businessId } = req.params;
     const { salesPersonId, salesPersonUserId } = req.body;
-
-    if (!businessId) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid business ID",
-      });
-    }
 
     if (!salesPersonId || !salesPersonUserId) {
       return res.status(400).json({
