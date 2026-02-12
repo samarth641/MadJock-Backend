@@ -5,7 +5,6 @@ import FeaturedAdvertisement from "../models/FeaturedAdvertisement.js";
 /**
  * GET all businesses (ADMIN)
  * OPTIONAL: ?status=pending | approved | rejected
- * NOTE: This still reads from AddBusiness (if you still need admin listing)
  */
 export const getAllBusinesses = async (req, res) => {
   try {
@@ -35,21 +34,43 @@ export const getAllBusinesses = async (req, res) => {
 };
 
 /**
- * ADD business (USER SIDE)
- * 🔥 NOW: Save ONLY to FeaturedAdvertisements
- * ❌ No save to AddBusiness
+ * ADD business (USER SIDE)  ✅ UPDATED
  */
 export const addBusiness = async (req, res) => {
   try {
-    const data = req.body; // 🔥 Frontend anuppura exact JSON (no modify)
+    const { businessName, ownerName, whatsapp } = req.body;
 
-    // ✅ ONLY Featured Advertisement la save pannum
-    const featured = await FeaturedAdvertisement.create(data);
+    if (!businessName || !ownerName || !whatsapp) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
+
+    // Check duplicate by whatsapp
+    const existing = await AddBusiness.findOne({
+      whatsapp: String(whatsapp).trim(),
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Business with this WhatsApp already exists",
+      });
+    }
+
+    // 🔥 Save FULL payload from frontend (form + links + media + etc)
+    const business = new AddBusiness({
+      ...req.body,
+      status: "pending",
+    });
+
+    await business.save();
 
     res.status(201).json({
       success: true,
-      message: "Business added to Featured Advertisements successfully",
-      data: featured,
+      message: "Business added successfully",
+      data: business,
     });
   } catch (error) {
     console.error("❌ Add business error:", error);
@@ -62,9 +83,6 @@ export const addBusiness = async (req, res) => {
 
 /**
  * APPROVE business (ADMIN)
- * NOTE: Ippo FeaturedAdvertisement already add pannirukkom in addBusiness,
- * so inga FeaturedAdvertisement la insert pannura logic REMOVE panniten.
- * Idhu AddBusiness status update ku mattum irukkum (if you still use AddBusiness).
  */
 export const approveBusiness = async (req, res) => {
   try {
@@ -90,8 +108,19 @@ export const approveBusiness = async (req, res) => {
       });
     }
 
-    // ❌ REMOVED: FeaturedAdvertisement.create(...) from here
-    // Because now we save directly to FeaturedAdvertisements in addBusiness
+    // Insert into FeaturedAdvertisements (if not exists)
+    const alreadyFeatured = await FeaturedAdvertisement.findOne({
+      businessId: updatedBusiness._id,
+    });
+
+    if (!alreadyFeatured) {
+      await FeaturedAdvertisement.create({
+        businessId: updatedBusiness._id,
+        selectedApprovedBusiness: updatedBusiness.toObject(),
+        status: "approved",
+        fileUrls: [],
+      });
+    }
 
     res.json({
       success: true,
@@ -151,7 +180,6 @@ export const rejectBusiness = async (req, res) => {
 /**
  * 🆕 ASSIGN BUSINESS TO SALES PERSON (ADMIN)
  * Body: { salesPersonId, salesPersonUserId }
- * NOTE: This still works with AddBusiness (if you are using that flow)
  */
 export const assignBusinessToSalesPerson = async (req, res) => {
   try {
@@ -203,7 +231,6 @@ export const assignBusinessToSalesPerson = async (req, res) => {
 /**
  * 🆕 GET BUSINESSES FOR A SALES PERSON (MOBILE APP)
  * Params: :salesPersonId  (THIS IS USER._id)
- * NOTE: Still reads from AddBusiness (if you are using that flow)
  */
 export const getBusinessesForSalesPerson = async (req, res) => {
   try {
@@ -216,6 +243,7 @@ export const getBusinessesForSalesPerson = async (req, res) => {
       });
     }
 
+    // 🔥 Use assignedSalesPersonUserId (ObjectId field)
     const businesses = await AddBusiness.find({
       assignedSalesPersonUserId: salesPersonId,
       status: "approved",
