@@ -34,7 +34,7 @@ export const getAllBusinesses = async (req, res) => {
 };
 
 /**
- * ADD business (USER SIDE)  ✅ UPDATED (WRAPPED STRUCTURE)
+ * ADD business (USER SIDE)  ✅ FIXED: GOES TO PENDING
  */
 export const addBusiness = async (req, res) => {
   try {
@@ -61,10 +61,10 @@ export const addBusiness = async (req, res) => {
 
     const body = req.body;
 
-    // 🔥 WRAPPER STRUCTURE (LIKE YOUR FIRST JSON)
+    // 🔥 WRAPPER STRUCTURE (NEW BUSINESS MUST BE PENDING)
     const doc = {
       fileUrls: body.media?.images?.map((i) => i.uri) || [],
-      status: "Approved", // top-level status
+      status: "pending",        // ✅ TOP-LEVEL = PENDING
       allowPayment: true,
       createdAt: new Date(),
 
@@ -100,7 +100,7 @@ export const addBusiness = async (req, res) => {
           document: body.media?.document || null,
         },
 
-        status: "pending", // inside business status
+        status: "pending",       // ✅ INSIDE ALSO PENDING
         createdAt: new Date(),
       },
     };
@@ -110,7 +110,7 @@ export const addBusiness = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Business added successfully",
+      message: "Business added successfully (Pending approval)",
       data: business,
     });
   } catch (error) {
@@ -138,7 +138,10 @@ export const approveBusiness = async (req, res) => {
 
     const updatedBusiness = await AddBusiness.findByIdAndUpdate(
       businessId,
-      { status: "approved" },
+      {
+        status: "approved", // ✅ top-level
+        "selectedApprovedBusiness.status": "approved", // ✅ inside also
+      },
       { new: true }
     );
 
@@ -193,7 +196,10 @@ export const rejectBusiness = async (req, res) => {
 
     const updatedBusiness = await AddBusiness.findByIdAndUpdate(
       businessId,
-      { status: "rejected" },
+      {
+        status: "rejected", // ✅ top-level
+        "selectedApprovedBusiness.status": "rejected", // ✅ inside also
+      },
       { new: true }
     );
 
@@ -220,7 +226,6 @@ export const rejectBusiness = async (req, res) => {
 
 /**
  * 🆕 ASSIGN BUSINESS TO SALES PERSON (ADMIN)
- * Body: { salesPersonId, salesPersonUserId }
  */
 export const assignBusinessToSalesPerson = async (req, res) => {
   try {
@@ -250,8 +255,8 @@ export const assignBusinessToSalesPerson = async (req, res) => {
       });
     }
 
-    business.assignedSalesPersonId = salesPersonId; // e.g. "SP001"
-    business.assignedSalesPersonUserId = salesPersonUserId; // USER._id
+    business.assignedSalesPersonId = salesPersonId;
+    business.assignedSalesPersonUserId = salesPersonUserId;
 
     await business.save();
 
@@ -271,11 +276,10 @@ export const assignBusinessToSalesPerson = async (req, res) => {
 
 /**
  * 🆕 GET BUSINESSES FOR A SALES PERSON (MOBILE APP)
- * Params: :salesPersonId  (THIS IS USER._id)
  */
 export const getBusinessesForSalesPerson = async (req, res) => {
   try {
-    const { salesPersonId } = req.params; // USER._id
+    const { salesPersonId } = req.params;
 
     if (!salesPersonId) {
       return res.status(400).json({
