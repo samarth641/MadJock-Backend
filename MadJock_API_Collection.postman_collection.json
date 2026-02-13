@@ -1,0 +1,1065 @@
+{
+    "info": {
+        "name": "MadJock Backend API",
+        "description": "Complete API documentation for MadJock Sales Backend with S3 file upload support",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_postman_id": "madjock-backend-api",
+        "version": "1.0.0"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:5000",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Send OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phoneNumber\": \"9876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/send-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "send-otp"
+                            ]
+                        },
+                        "description": "Send OTP to user's phone number for verification"
+                    }
+                },
+                {
+                    "name": "Verify OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phoneNumber\": \"9876543210\",\n  \"otp\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/verify-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "verify-otp"
+                            ]
+                        },
+                        "description": "Verify OTP sent to user's phone"
+                    }
+                },
+                {
+                    "name": "Check Approval Status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phoneNumber\": \"9876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/check-approval",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "check-approval"
+                            ]
+                        },
+                        "description": "Check if user is approved (no OTP required)"
+                    }
+                },
+                {
+                    "name": "Register Full User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"9876543210\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/register-full",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register-full"
+                            ]
+                        },
+                        "description": "Register a new user with complete details"
+                    }
+                },
+                {
+                    "name": "User Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login for approved users"
+                    }
+                },
+                {
+                    "name": "Admin Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/admin/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "admin",
+                                "login"
+                            ]
+                        },
+                        "description": "Admin login (no approval check)"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Business Management",
+            "item": [
+                {
+                    "name": "Add Business (with S3 Upload)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "businessName",
+                                    "value": "Test Business",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "ownerName",
+                                    "value": "John Doe",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "whatsapp",
+                                    "value": "9876543210",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Business description",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "address",
+                                    "value": "123 Main Street",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "city",
+                                    "value": "Mumbai",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "state",
+                                    "value": "Maharashtra",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "pincode",
+                                    "value": "400001",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "businessCategory",
+                                    "value": "Retail",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "products",
+                                    "value": "Products offered",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "noOfEmployee",
+                                    "value": "10",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "establishedIn",
+                                    "value": "2020",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "websiteLink",
+                                    "value": "https://example.com",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "facebookLink",
+                                    "value": "https://facebook.com/business",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "instagramLink",
+                                    "value": "https://instagram.com/business",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "facebook",
+                                    "value": "YES",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "instagram",
+                                    "value": "YES",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "twitter",
+                                    "value": "NO",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "website",
+                                    "value": "YES",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "images",
+                                    "type": "file",
+                                    "src": "/path/to/image1.jpg"
+                                },
+                                {
+                                    "key": "images",
+                                    "type": "file",
+                                    "src": "/path/to/image2.jpg"
+                                },
+                                {
+                                    "key": "logo",
+                                    "type": "file",
+                                    "src": "/path/to/logo.png"
+                                },
+                                {
+                                    "key": "banner",
+                                    "type": "file",
+                                    "src": "/path/to/banner.jpg"
+                                },
+                                {
+                                    "key": "selfie",
+                                    "type": "file",
+                                    "src": "/path/to/selfie.jpg"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/add-business",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                "add-business"
+                            ]
+                        },
+                        "description": "Add a new business with file uploads to S3. Files are automatically uploaded to S3 and URLs are stored in MongoDB."
+                    }
+                },
+                {
+                    "name": "Get All Businesses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/all",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                "all"
+                            ]
+                        },
+                        "description": "Get all businesses (optional: ?status=pending|approved|rejected)"
+                    }
+                },
+                {
+                    "name": "Get Pending Businesses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/all?status=pending",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                "all"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "pending"
+                                }
+                            ]
+                        },
+                        "description": "Get all pending businesses"
+                    }
+                },
+                {
+                    "name": "Approve Business",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/:businessId/approved",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                ":businessId",
+                                "approved"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "businessId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        },
+                        "description": "Approve a business by ID"
+                    }
+                },
+                {
+                    "name": "Reject Business",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/:businessId/rejected",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                ":businessId",
+                                "rejected"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "businessId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        },
+                        "description": "Reject a business by ID"
+                    }
+                },
+                {
+                    "name": "Assign Business to Sales Person",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"salesPersonId\": \"507f1f77bcf86cd799439011\",\n  \"salesPersonUserId\": \"9876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/:businessId/assign",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                ":businessId",
+                                "assign"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "businessId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        },
+                        "description": "Assign a business to a sales person"
+                    }
+                },
+                {
+                    "name": "Get Businesses for Sales Person",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/sales/:salesPersonId/businesses",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                "sales",
+                                ":salesPersonId",
+                                "businesses"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "salesPersonId",
+                                    "value": "9876543210"
+                                }
+                            ]
+                        },
+                        "description": "Get all businesses assigned to a sales person"
+                    }
+                },
+                {
+                    "name": "Delete Business",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/business/:businessId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "business",
+                                ":businessId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "businessId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        },
+                        "description": "Delete a business by ID"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Sales Person Management",
+            "item": [
+                {
+                    "name": "Get Pending Sales Persons",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/users/pending",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                "pending"
+                            ]
+                        },
+                        "description": "Get all pending sales persons"
+                    }
+                },
+                {
+                    "name": "Get Approved Sales Persons",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/users/approved",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                "approved"
+                            ]
+                        },
+                        "description": "Get all approved sales persons"
+                    }
+                },
+                {
+                    "name": "Approve Sales Person",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/users/:id/approve",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                ":id",
+                                "approve"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Approve a sales person by ID"
+                    }
+                },
+                {
+                    "name": "Reject Sales Person",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/users/:id/reject",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                ":id",
+                                "reject"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Reject a sales person by ID"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Service Management",
+            "item": [
+                {
+                    "name": "Get All Service Inquiries",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/service/service-inquiry",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "service",
+                                "service-inquiry"
+                            ]
+                        },
+                        "description": "Get all service inquiries"
+                    }
+                },
+                {
+                    "name": "Approve Service Inquiry",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/service/service-inquiry/:id/approve",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "service",
+                                "service-inquiry",
+                                ":id",
+                                "approve"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Approve a service inquiry"
+                    }
+                },
+                {
+                    "name": "Reject Service Inquiry",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/service/service-inquiry/:id/reject",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "service",
+                                "service-inquiry",
+                                ":id",
+                                "reject"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Reject a service inquiry"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Featured Advertisements",
+            "item": [
+                {
+                    "name": "Get All Featured Ads",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/featured/all",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "featured",
+                                "all"
+                            ]
+                        },
+                        "description": "Get all featured advertisements (approved businesses)"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin Users",
+            "item": [
+                {
+                    "name": "Get All Admins",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/app-users/all",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "app-users",
+                                "all"
+                            ]
+                        },
+                        "description": "Get all admin users"
+                    }
+                },
+                {
+                    "name": "Approve Admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/app-users/approve/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "app-users",
+                                "approve",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Approve an admin user"
+                    }
+                },
+                {
+                    "name": "Disable Admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/app-users/disable/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "app-users",
+                                "disable",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Disable an admin user"
+                    }
+                },
+                {
+                    "name": "Delete Admin",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/app-users/delete/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "app-users",
+                                "delete",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Delete an admin user"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "App Users Management",
+            "item": [
+                {
+                    "name": "Get All App Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/all",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "all"
+                            ]
+                        },
+                        "description": "Get all app users from usersInfo collection"
+                    }
+                },
+                {
+                    "name": "Block User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/:id/block",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                ":id",
+                                "block"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Block an app user"
+                    }
+                },
+                {
+                    "name": "Unblock User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/:id/unblock",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                ":id",
+                                "unblock"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Unblock an app user"
+                    }
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "507f1f77bcf86cd799439011"
+                                }
+                            ]
+                        },
+                        "description": "Delete an app user"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Services & Categories",
+            "item": [
+                {
+                    "name": "Get All Services",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/alter/services",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "alter",
+                                "services"
+                            ]
+                        },
+                        "description": "Get all services"
+                    }
+                },
+                {
+                    "name": "Add Service",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Service\",\n  \"description\": \"Service description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/alter/services",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "alter",
+                                "services"
+                            ]
+                        },
+                        "description": "Add a new service"
+                    }
+                },
+                {
+                    "name": "Get All Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/alter/categories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "alter",
+                                "categories"
+                            ]
+                        },
+                        "description": "Get all categories"
+                    }
+                },
+                {
+                    "name": "Add Category",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Category\",\n  \"description\": \"Category description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/alter/categories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "alter",
+                                "categories"
+                            ]
+                        },
+                        "description": "Add a new category"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Health Check",
+            "item": [
+                {
+                    "name": "Server Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                ""
+                            ]
+                        },
+                        "description": "Check if server is running"
+                    }
+                }
+            ]
+        }
+    ]
+}
