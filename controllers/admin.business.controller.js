@@ -307,3 +307,32 @@ export const getBusinessesForSalesPerson = async (req, res) => {
     });
   }
 };
+
+/**
+ * 🆕 DELETE BUSINESS (ADMIN)  ✅ ADD THIS
+ */
+export const deleteBusiness = async (req, res) => {
+  try {
+    const { businessId } = req.params;
+
+    const deleted = await AddBusiness.findByIdAndDelete(businessId);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Business not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Business deleted successfully",
+    });
+  } catch (error) {
+    console.error("❌ Delete business error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete business",
+    });
+  }
+};

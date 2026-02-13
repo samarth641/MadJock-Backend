@@ -6,6 +6,7 @@ import {
   rejectBusiness,
   assignBusinessToSalesPerson,
   getBusinessesForSalesPerson,
+  deleteBusiness, // ✅ ADD THIS
 } from "../controllers/admin.business.controller.js";
 
 const router = express.Router();
@@ -41,6 +42,11 @@ router.put("/:businessId/assign", assignBusinessToSalesPerson);
 // 🆕 GET BUSINESSES FOR A SALES PERSON (MOBILE APP)
 // ===============================
 router.get("/sales/:salesPersonId/businesses", getBusinessesForSalesPerson);
+
+// ===============================
+// 🆕 DELETE BUSINESS (ADMIN)  ✅ ADD THIS
+// ===============================
+router.delete("/:businessId", deleteBusiness);
 
 // ===============================
 // EXPORT
