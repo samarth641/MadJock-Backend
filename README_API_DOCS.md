@@ -168,9 +168,9 @@ NODE_ENV=development
 MONGO_URI=mongodb+srv://...
 
 # AWS S3
-AWS_ACCESS_KEY=your_access_key
-AWS_SECRET_KEY=your_secret_key
-AWS_REGION=ap-south-1
+MJ_AWS_ACCESS_KEY=your_access_key
+MJ_AWS_SECRET_KEY=your_secret_key
+MJ_AWS_REGION=ap-south-1
 S3_BUCKET=madjock-apsouth-1
 
 # JWT
