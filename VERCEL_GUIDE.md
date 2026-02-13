@@ -21,9 +21,9 @@ This guide explains how to deploy the MadJock backend to Vercel.
     - Add all variables from your `.env` file:
         - `MONGO_URI`
         - `JWT_SECRET`
-        - `AWS_ACCESS_KEY`
-        - `AWS_SECRET_KEY`
-        - `AWS_REGION`
+        - `MJ_AWS_ACCESS_KEY` (Updated to avoid conflict)
+        - `MJ_AWS_SECRET_KEY` (Updated to avoid conflict)
+        - `MJ_AWS_REGION` (Updated from AWS_REGION which is reserved)
         - `S3_BUCKET`
         - `DRAFT4SMS_API_KEY`
         - `DRAFT4SMS_SENDER_ID`
