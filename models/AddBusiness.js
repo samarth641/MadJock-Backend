@@ -354,6 +354,7 @@ const AddBusinessSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    strictQuery: false,
     collection: "add-business",
   }
 );

@@ -32,6 +32,7 @@ const FeaturedAdvertisementSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    strictQuery: false,
 
     // 🔥 MUST MATCH EXISTING COLLECTION
     collection: "Featured-Advertisements",

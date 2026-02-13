@@ -8,17 +8,77 @@ import FeaturedAdvertisement from "../models/FeaturedAdvertisement.js";
  */
 export const getAllBusinesses = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, category, search, query, city } = req.query;
+    const searchTerm = (search || query || "").trim();
+    const cityTerm = (city || "").trim();
 
-    const filter = {};
+    // Build robust filter using $and
+    const queryObj = { $and: [] };
+
+    // Status filter
     if (status) {
-      filter.status = status;
+      queryObj.$and.push({ status: { $regex: `^${status.trim()}$`, $options: "i" } });
     }
 
-    const sortOption =
-      status === "approved" ? { updatedAt: -1 } : { createdAt: -1 };
+    // Category filter
+    if (category) {
+      queryObj.$and.push({
+        "selectedApprovedBusiness.businessCategory": {
+          $regex: category.trim().replace(/-/g, ' '),
+          $options: "i"
+        }
+      });
+    }
 
-    const businesses = await AddBusiness.find(filter).sort(sortOption);
+    if (searchTerm) {
+      queryObj.$and.push({
+        $or: [
+          // Nested fields
+          { "selectedApprovedBusiness.businessName": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.businessCategory": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.city": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.address": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.state": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.businessLocation": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.description": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.businessDescription": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.products": { $regex: searchTerm, $options: "i" } },
+          { "selectedApprovedBusiness.productsOffered": { $regex: searchTerm, $options: "i" } },
+          // Top-level fields (for legacy/flat structure support)
+          { "businessName": { $regex: searchTerm, $options: "i" } },
+          { "businessCategory": { $regex: searchTerm, $options: "i" } },
+          { "city": { $regex: searchTerm, $options: "i" } },
+          { "address": { $regex: searchTerm, $options: "i" } },
+          { "state": { $regex: searchTerm, $options: "i" } },
+          { "description": { $regex: searchTerm, $options: "i" } },
+          { "products": { $regex: searchTerm, $options: "i" } }
+        ]
+      });
+    }
+
+    if (cityTerm) {
+      queryObj.$and.push({
+        $or: [
+          // Nested fields
+          { "selectedApprovedBusiness.city": { $regex: cityTerm, $options: "i" } },
+          { "selectedApprovedBusiness.address": { $regex: cityTerm, $options: "i" } },
+          { "selectedApprovedBusiness.state": { $regex: cityTerm, $options: "i" } },
+          { "selectedApprovedBusiness.businessLocation": { $regex: cityTerm, $options: "i" } },
+          { "selectedApprovedBusiness.streetAddresses": { $regex: cityTerm, $options: "i" } },
+          // Top-level fields (for legacy/flat structure support)
+          { "city": { $regex: cityTerm, $options: "i" } },
+          { "address": { $regex: cityTerm, $options: "i" } },
+          { "state": { $regex: cityTerm, $options: "i" } }
+        ]
+      });
+    }
+
+    // Fallback if no filters
+    const finalFilter = queryObj.$and.length > 0 ? queryObj : {};
+
+    const sortOption = status === "approved" ? { updatedAt: -1 } : { createdAt: -1 };
+
+    const businesses = await AddBusiness.find(finalFilter).sort(sortOption);
 
     res.json({
       success: true,
@@ -59,25 +119,58 @@ export const addBusiness = async (req, res) => {
     // 🔥 Generate simple id like old structure (string)
     const generatedId = Date.now().toString();
 
+    // 📁 Extract S3 file URLs from uploaded files
+    const uploadedFiles = req.files || {};
+
+    // Get image URLs
+    const imageUrls = uploadedFiles.images
+      ? uploadedFiles.images.map((file) => file.location)
+      : [];
+
+    // Get logo URL
+    const logoUrl = uploadedFiles.logo
+      ? uploadedFiles.logo[0].location
+      : "";
+
+    // Get banner URL
+    const bannerUrl = uploadedFiles.banner
+      ? uploadedFiles.banner[0].location
+      : "";
+
+    // Get selfie URL
+    const selfieUrl = uploadedFiles.selfie
+      ? uploadedFiles.selfie[0].location
+      : "";
+
+    // Get document URLs
+    const businessDocUrl = uploadedFiles.businessDoc
+      ? uploadedFiles.businessDoc[0].location
+      : "";
+
+    const gstDocUrl = uploadedFiles.gstDoc
+      ? uploadedFiles.gstDoc[0].location
+      : "";
+
     // 🔥 Build EXACT OLD STRUCTURE (WITHOUT TOUCHING MONGO _id)
     const doc = {
-      fileUrls: (body.media?.images || []).map((i) => i.uri),
+      fileUrls: imageUrls,
       status: "pending", // TOP LEVEL STATUS = pending
       allowPayment: true,
 
       selectedApprovedBusiness: {
         noOfEmployee: body.noOfEmployee || "",
-        businessImages: (body.media?.images || []).map((i) => i.uri),
+        businessImages: imageUrls,
         twitterLink: body.twitterLink || "",
         businessLocation: body.address || "",
         generatedid: generatedId, // ✅ OLD STYLE STRING ID HERE
         businessDocument: body.businessDoc === "YES",
-        businessLogo: body.media?.logo?.uri || "",
+        businessDocumentUrl: businessDocUrl, // ✅ S3 URL for business document
+        businessLogo: logoUrl, // ✅ S3 URL for logo
         websiteLink: body.websiteLink ? [body.websiteLink] : [],
         streetAddresses: body.streetAddresses?.length
           ? body.streetAddresses
           : [body.address || ""],
-        businessBanner: body.media?.banner?.uri || "",
+        businessBanner: bannerUrl, // ✅ S3 URL for banner
         ownerName: body.ownerName || "",
         state: body.state || "",
         businessDescription: body.description || "",
@@ -94,7 +187,7 @@ export const addBusiness = async (req, res) => {
         subscription: [],
         instagramProfileLink: body.instagramLink || "",
         startDate: "",
-        selfieImage: body.media?.selfie?.uri || "",
+        selfieImage: selfieUrl, // ✅ S3 URL for selfie
         instagramLink: body.instagramLink || "",
         userId: body.whatsapp || "",
         id: "",
@@ -112,6 +205,7 @@ export const addBusiness = async (req, res) => {
         businessCategory: body.businessCategory || "",
         website: body.website === "YES",
         gstCertificate: body.gstDoc === "YES",
+        gstCertificateUrl: gstDocUrl, // ✅ S3 URL for GST certificate
         expiryDate: "",
         facebookLink: body.facebookLink || "",
         businessName: body.businessName || "",
@@ -324,6 +418,65 @@ export const deleteBusiness = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete business",
+    });
+  }
+};
+/**
+ * 🆕 GET SINGLE BUSINESS BY ID
+ * Searches across _id, selectedApprovedBusiness.id, and selectedApprovedBusiness.generatedid
+ */
+export const getBusinessById = async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    console.log(`🔍 Received request for business detail. ID: ${businessId}`);
+
+    if (!businessId) {
+      return res.status(400).json({ success: false, message: "Business ID is required" });
+    }
+
+    // Robust search: Try multiple possible ID fields
+    let business = null;
+
+    // 1. Try finding by MongoDB _id (Standard flow)
+    if (mongoose.Types.ObjectId.isValid(businessId)) {
+      business = await AddBusiness.findById(businessId);
+    }
+
+    // 2. If not found by ObjectId, search in the custom string fields
+    if (!business) {
+      business = await AddBusiness.findOne({
+        $or: [
+          { "selectedApprovedBusiness.id": businessId },
+          { "selectedApprovedBusiness.generatedid": businessId },
+          { "selectedApprovedBusiness.userId": businessId }
+        ]
+      });
+    }
+
+    // 3. Last ditch effort: Try finding by string _id
+    if (!business && !mongoose.Types.ObjectId.isValid(businessId)) {
+      business = await AddBusiness.findOne({ _id: businessId }).catch(() => null);
+    }
+
+    if (!business) {
+      console.warn(`⚠️ Business not found for ID: ${businessId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Business not found in database",
+      });
+    }
+
+    console.log(`✅ Business found: ${business.selectedApprovedBusiness?.businessName || 'Unnamed'}`);
+    return res.status(200).json({
+      success: true,
+      data: business,
+    });
+  } catch (error) {
+    console.error("❌ Get business by ID error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching business details",
+      error: error.message
     });
   }
 };

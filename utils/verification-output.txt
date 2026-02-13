@@ -1,0 +1,42 @@
+﻿≡ƒöì Connecting to MongoDB...
+
+Γ£à Connected to MongoDB
+
+≡ƒôè Latest Business Entry:
+============================================================
+
+≡ƒåö MongoDB ID: 698ebf1c30f3e739ac507bbe
+≡ƒôà Created: Fri Feb 13 2026 11:35:16 GMT+0530 (India Standard Time)
+
+≡ƒô¥ Business Details:
+   Name: Test Business 1770962716058
+   Owner: John Doe
+   Contact: 9876543210
+   Status: pending
+
+≡ƒû╝∩╕Å  File URLs (S3):
+============================================================
+
+≡ƒô╕ Business Images (2):
+   1. Γ£à S3: https://madjock-apsouth-1.s3.ap-south-1.amazonaws.com/business/images/images-177...
+   2. Γ£à S3: https://madjock-apsouth-1.s3.ap-south-1.amazonaws.com/business/images/images-177...
+
+≡ƒÄ¿ Logo:
+   Γ£à S3: https://madjock-apsouth-1.s3.ap-south-1.amazonaws.com/business/logos/logo-1770962716080-fsruwsawnoo.png
+
+≡ƒÄ¬ Banner:
+   Γ£à S3: https://madjock-apsouth-1.s3.ap-south-1.amazonaws.com/business/banners/banner-1770962716080-ma1fh9anyz9.png
+
+≡ƒô╖ Selfie:
+   Γ£à S3: https://madjock-apsouth-1.s3.ap-south-1.amazonaws.com/business/selfies/selfie-1770962716081-hr44bo8zr0w.png
+
+============================================================
+
+≡ƒôè Summary:
+   Total URLs: 5
+   S3 URLs: 5
+   Success Rate: 100.0%
+
+Γ£¿ SUCCESS! All files are stored in S3!
+
+Γ£à Database connection closed
