@@ -43,8 +43,22 @@ const app = express();
 // ================= MIDDLEWARE =================
 import dbMiddleware from "./middleware/db.middleware.js";
 
-app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://madjock-website-frontend.vercel.app",
+  "https://madjock-website-frontend-i7112mh0f-samarth641s-projects.vercel.app"
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use(dbMiddleware); // 🛡️ Ensure DB is connected for every request
 
 // ================= ROUTE MOUNTS =================
