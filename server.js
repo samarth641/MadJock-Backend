@@ -35,6 +35,9 @@ import alterRoutes from "./routes/alter.routes.js";
 // 🆕 ADMIN – USER APPROVAL (REUSED sales routes)
 import adminSalesRoutes from "./routes/admin.sales.routes.js";
 
+// SLIDER IMAGES
+import sliderRoutes from "./routes/slider.routes.js";
+
 const app = express();
 
 // ================= MIDDLEWARE =================
@@ -76,6 +79,9 @@ app.use("/api/users", manageUsersRoutes);  // new usersInfo
 
 // ALTER BUSINESS
 app.use("/api/admin/alter", alterRoutes);
+
+// SLIDER IMAGES
+app.use("/api/sliders", sliderRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {

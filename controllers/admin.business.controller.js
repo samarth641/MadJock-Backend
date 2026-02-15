@@ -236,6 +236,13 @@ export const approveBusiness = async (req, res) => {
   try {
     const { businessId } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(businessId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Business ID format",
+      });
+    }
+
     const updatedBusiness = await AddBusiness.findByIdAndUpdate(
       businessId,
       {
@@ -286,6 +293,13 @@ export const rejectBusiness = async (req, res) => {
   try {
     const { businessId } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(businessId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Business ID format",
+      });
+    }
+
     const updatedBusiness = await AddBusiness.findByIdAndUpdate(
       businessId,
       {
@@ -322,6 +336,14 @@ export const rejectBusiness = async (req, res) => {
 export const assignBusinessToSalesPerson = async (req, res) => {
   try {
     const { businessId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(businessId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Business ID format",
+      });
+    }
+
     const { salesPersonId, salesPersonUserId } = req.body;
 
     if (!salesPersonId || !salesPersonUserId) {
@@ -399,6 +421,13 @@ export const getBusinessesForSalesPerson = async (req, res) => {
 export const deleteBusiness = async (req, res) => {
   try {
     const { businessId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(businessId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Business ID format",
+      });
+    }
 
     const deleted = await AddBusiness.findByIdAndDelete(businessId);
 

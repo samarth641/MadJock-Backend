@@ -65,11 +65,33 @@ const s3Storage = multerS3({
             folder = "business/images";
         } else if (file.fieldname.includes("doc")) {
             folder = "business/documents";
+        } else if (file.fieldname === "sliderImage") {
+            folder = "sliders";
+        } else if (file.fieldname === "categoryIcon") {
+            folder = "category-icons";
         }
 
         cb(null, `${folder}/${filename}`);
     },
 });
+
+// Multer upload configuration for category icons
+export const uploadCategoryIcon = multer({
+    storage: s3Storage,
+    fileFilter: imageFileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit for icons
+    },
+}).single("categoryIcon");
+
+// Multer upload configuration for sliders
+export const uploadSliderImage = multer({
+    storage: s3Storage,
+    fileFilter: imageFileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+}).single("sliderImage");
 
 // Multer upload configuration for business media (images, logo, banner, selfie)
 export const uploadBusinessMedia = multer({

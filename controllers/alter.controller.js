@@ -1,4 +1,4 @@
-// ⚠️ OLD MODELS USE PANROM – change panna vendam
+import mongoose from "mongoose";
 import Service from "../models/service.model.js";
 import Category from "../models/addCategory.model.js";
 
@@ -42,7 +42,8 @@ export const getCategories = async (req, res) => {
 // 🔹 ADD CATEGORY
 export const addCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, featured } = req.body;
+    let icon = "";
 
     if (!name) {
       return res
@@ -57,9 +58,59 @@ export const addCategory = async (req, res) => {
         .json({ success: false, message: "Category already exists" });
     }
 
-    const data = await Category.create({ name });
+    if (req.file) {
+      icon = req.file.location;
+    }
+
+    const data = await Category.create({
+      name,
+      icon,
+      featured: featured === "true" || featured === true
+    });
 
     res.status(201).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 🔹 EDIT CATEGORY
+export const editCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 🔧 Flexible validation: Handle empty, missing, or literal "undefined" string
+    if (!id || id === "undefined") {
+      return res.status(400).json({
+        success: false,
+        message: "A valid ID is required to update a category",
+      });
+    }
+
+    const { name, featured } = req.body;
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (req.file) {
+      updateData.icon = req.file.location;
+    }
+
+    if (featured !== undefined) {
+      updateData.featured = featured === "true" || featured === true;
+    }
+
+    // 🔥 Use the model's collection directly if needed, or rely on Mixed type schema
+    const data = await Category.findOneAndUpdate({ _id: id }, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    res.status(200).json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

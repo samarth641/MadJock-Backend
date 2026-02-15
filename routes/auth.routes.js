@@ -4,7 +4,10 @@ import {
   sendOtp,
   verifyOtp,
   checkApproval,
-  registerFullUser,   // 🆕 ONLY THIS REGISTER
+  checkUserExists,
+  sendEmailOtp,
+  verifyEmailOtp,
+  registerFullUser,
 } from "../controllers/auth.controller.js";
 import AdminUser from "../models/AdminUser.js";
 
@@ -12,18 +15,25 @@ const router = express.Router();
 
 /* ================= OTP ROUTES ================= */
 
-// Send OTP
+// Send OTP (Universal)
 router.post("/send-otp", sendOtp);
 
 // Verify OTP
 router.post("/verify-otp", verifyOtp);
+
+// Check if user exists
+router.post("/check-user", checkUserExists);
+
+// Email OTP
+router.post("/send-email-otp", sendEmailOtp);
+router.post("/verify-email-otp", verifyEmailOtp);
 
 // 🔁 Check approval status (NO OTP)
 router.post("/check-approval", checkApproval);
 
 /* ================= REGISTER ROUTE ================= */
 
-// 🆕 ONLY FULL REGISTER (Step1 + Step2 form)
+// Signup
 router.post("/register-full", registerFullUser);
 
 /* ================= EXISTING LOGIN ROUTE (UNCHANGED) ================= */

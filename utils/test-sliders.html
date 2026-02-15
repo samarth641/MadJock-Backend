@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MadJock - Slider Management Test</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #334155;
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            font-size: 0.875rem;
+        }
+
+        .message.success {
+            display: block;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .message.error {
+            display: block;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .preview {
+            margin-top: 1rem;
+            max-width: 100%;
+            border-radius: 0.5rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Add Slider Image</h1>
+    <form id="sliderForm">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" placeholder="Slider Title (optional)">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" placeholder="Slider Description (optional)"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="link">Target Link</label>
+            <input type="text" id="link" name="link" placeholder="https://... or app-route">
+        </div>
+
+        <div class="form-group">
+            <label for="order">Display Order</label>
+            <input type="number" id="order" name="order" value="0">
+        </div>
+
+        <div class="form-group">
+            <label for="sliderImage">Slider Image (Recommended: 16:9 or 2:1)</label>
+            <input type="file" id="sliderImage" name="sliderImage" accept="image/*" required>
+            <img id="imagePreview" class="preview" alt="Preview">
+        </div>
+
+        <button type="submit" id="submitBtn">Upload Slider</button>
+    </form>
+
+    <div id="statusMessage" class="message"></div>
+</div>
+
+<script>
+    const form = document.getElementById('sliderForm');
+    const imageInput = document.getElementById('sliderImage');
+    const preview = document.getElementById('imagePreview');
+    const statusMsg = document.getElementById('statusMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Image preview
+    imageInput.onchange = (e) => {
+        const [file] = imageInput.files;
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+        }
+    };
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        statusMsg.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Uploading...';
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/sliders/add', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                statusMsg.className = 'message success';
+                statusMsg.innerText = '✅ ' + result.message;
+                form.reset();
+                preview.style.display = 'none';
+            } else {
+                throw new Error(result.message || 'Upload failed');
+            }
+        } catch (err) {
+            statusMsg.className = 'message error';
+            statusMsg.innerText = '❌ Error: ' + err.message;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Upload Slider';
+        }
+    };
+</script>
+
+</body>
+</html>
