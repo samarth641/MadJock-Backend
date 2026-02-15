@@ -41,11 +41,11 @@ import sliderRoutes from "./routes/slider.routes.js";
 const app = express();
 
 // ================= MIDDLEWARE =================
-app.use(cors());
-app.use(express.json({ limit: "10mb" })); // allow large payloads (images/meta)
+import dbMiddleware from "./middleware/db.middleware.js";
 
-// ================= DATABASE =================
-connectDB();
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
+app.use(dbMiddleware); // 🛡️ Ensure DB is connected for every request
 
 // ================= ROUTE MOUNTS =================
 
