@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
     salesId: {
       type: String,
       unique: true,
-      default: null, // not required during register
+      sparse: true, // MUST be sparse to allow multiple missing values during signup
       trim: true,
     },
 
@@ -69,6 +69,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin", "sales"],
       default: "user",
+    },
+
+    // 🆕 GENDER
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other"],
+      default: "Male",
+    },
+
+    // 🆕 REFERRAL CODE
+    referralCode: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // 🆕 VERIFICATION STATUS
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    phoneVerified: {
+      type: Boolean,
+      default: false,
     },
 
     // 🔹 APPROVAL STATUS (for sales persons)

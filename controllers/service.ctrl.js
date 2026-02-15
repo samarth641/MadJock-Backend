@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Service from "../models/service.model.js";
 /* ===============================
    GET ALL SERVICES
@@ -34,6 +35,11 @@ export const addOne = async (req, res) => {
 export const updateOne = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID format" });
+    }
+
     const { name } = req.body;
 
     await Service.findByIdAndUpdate(id, {
@@ -52,6 +58,11 @@ export const updateOne = async (req, res) => {
 export const deleteOne = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID format" });
+    }
+
     await Service.findByIdAndDelete(id);
     res.json({ success: true });
   } catch (err) {
