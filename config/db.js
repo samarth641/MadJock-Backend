@@ -24,6 +24,9 @@ const connectDB = async () => {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false, // Disable Mongoose buffering for serverless
+      serverSelectionTimeoutMS: 10000, // 10 seconds timeout for selection
+      socketTimeoutMS: 45000, // 45 seconds timeout for socket
+      family: 4, // Force IPv4 to avoid same issues as SMTP
     };
 
     cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {

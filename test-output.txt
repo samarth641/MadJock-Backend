@@ -1,0 +1,7 @@
+--- TESTING OTP GENERATION ---
+Generated OTP: 404071
+✅ OTP is 6 digits.
+
+--- TESTING EMAIL SENDING ---
+Attempting to send email with HTML template...
+✅ Email sent successfully

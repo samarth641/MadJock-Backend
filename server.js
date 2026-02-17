@@ -37,6 +37,7 @@ import adminSalesRoutes from "./routes/admin.sales.routes.js";
 
 // SLIDER IMAGES
 import sliderRoutes from "./routes/slider.routes.js";
+import communityRoutes from "./routes/community.routes.js";
 
 const app = express();
 
@@ -51,9 +52,17 @@ const allowedOrigins = [
 ];
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.warn(`❌ CORS blocked for origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -96,6 +105,7 @@ app.use("/api/admin/alter", alterRoutes);
 
 // SLIDER IMAGES
 app.use("/api/sliders", sliderRoutes);
+app.use("/api/community", communityRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {

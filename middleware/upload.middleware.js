@@ -6,6 +6,7 @@ import path from "path";
 // Allowed file types
 const allowedImageTypes = /jpeg|jpg|png|gif|webp/;
 const allowedDocTypes = /pdf|doc|docx|jpeg|jpg|png/;
+const allowedVideoTypes = /mp4|mov|avi|wmv|flv|mkv|webm/;
 
 // File filter for images
 const imageFileFilter = (req, file, cb) => {
@@ -39,6 +40,18 @@ const docFileFilter = (req, file, cb) => {
     }
 };
 
+// File filter for community media (images + videos)
+const communityFileFilter = (req, file, cb) => {
+    const isImage = allowedImageTypes.test(path.extname(file.originalname).toLowerCase()) && allowedImageTypes.test(file.mimetype);
+    const isVideo = allowedVideoTypes.test(path.extname(file.originalname).toLowerCase()) || file.mimetype.startsWith('video/');
+
+    if (isImage || isVideo) {
+        return cb(null, true);
+    } else {
+        cb(new Error("Only image and video files are allowed"));
+    }
+};
+
 // S3 storage configuration for business media
 const s3Storage = multerS3({
     s3: s3Client,
@@ -69,6 +82,8 @@ const s3Storage = multerS3({
             folder = "sliders";
         } else if (file.fieldname === "categoryIcon") {
             folder = "category-icons";
+        } else if (file.fieldname === "communityMedia") {
+            folder = "community";
         }
 
         cb(null, `${folder}/${filename}`);
@@ -92,6 +107,15 @@ export const uploadSliderImage = multer({
         fileSize: 10 * 1024 * 1024, // 10MB limit
     },
 }).single("sliderImage");
+
+// Multer upload configuration for community media
+export const uploadCommunityMedia = multer({
+    storage: s3Storage,
+    fileFilter: communityFileFilter,
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB limit for community posts (allows better video quality)
+    },
+}).single("communityMedia");
 
 // Multer upload configuration for business media (images, logo, banner, selfie)
 export const uploadBusinessMedia = multer({

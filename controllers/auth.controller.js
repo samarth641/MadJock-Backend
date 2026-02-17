@@ -3,6 +3,8 @@ import User from "../models/User.js";
 import Otp from "../models/Otp.js";
 import { generateOtp } from "../utils/generateOtp.js";
 import { sendOtpSms } from "../utils/sendOtpSms.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import { getOtpEmailTemplate } from "../utils/emailTemplates.js";
 
 /* ===============================
    SEND OTP  (ONLY FOR REGISTERED USERS)
@@ -167,9 +169,12 @@ export const sendEmailOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
     });
 
-    // 📩 Placeholder for email utility
-    console.log("✅ EMAIL OTP GENERATED:", otp, "FOR:", email);
-    // In a real scenario: await sendEmail(email, `Your OTP is ${otp}`);
+    // 📩 Send Email
+    const emailBody = getOtpEmailTemplate(otp);
+
+    await sendEmail(email, "Your OTP - MadJock", emailBody);
+
+    console.log("✅ EMAIL OTP SENT TO:", email);
 
     return res.status(200).json({
       success: true,
