@@ -17,10 +17,14 @@ const experienceSchema = new mongoose.Schema(
 
 const userSchema = new mongoose.Schema(
   {
+    _id: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
     phone: {
       type: String,
       unique: true,
-      required: true,
+      required: false, // Changed to false to handle documents that might use 'phoneNumber'
     },
 
     name: {
@@ -46,7 +50,7 @@ const userSchema = new mongoose.Schema(
 
     // 🆕 DATE OF BIRTH
     dob: {
-      type: String, // store as "YYYY-MM-DD"
+      type: mongoose.Schema.Types.Mixed, // handle both String "YYYY-MM-DD" and Firebase Timestamp objects
       default: "",
     },
 
@@ -100,9 +104,37 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // new sales person = pending
     },
+
+    // 🆕 SOCIAL FEATURES
+    avatar: {
+      type: String,
+      default: "",
+    },
+    bio: {
+      type: String,
+      default: "",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    followers: [{
+      type: String,
+      ref: "User",
+    }],
+    following: [{
+      type: String,
+      ref: "User",
+    }],
+    createdAt: {
+      type: mongoose.Schema.Types.Mixed,
+    },
+    updatedAt: {
+      type: mongoose.Schema.Types.Mixed,
+    },
   },
-  { timestamps: true }
+  { strict: false }
 );
 
-// ✅ DEFAULT EXPORT
-export default mongoose.model("User", userSchema);
+// ✅ DEFAULT EXPORT - Pointing to usersInfo to pick up existing users
+export default mongoose.model("User", userSchema, "usersInfo");

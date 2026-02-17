@@ -38,6 +38,7 @@ import adminSalesRoutes from "./routes/admin.sales.routes.js";
 // SLIDER IMAGES
 import sliderRoutes from "./routes/slider.routes.js";
 import communityRoutes from "./routes/community.routes.js";
+import appUserRoutes from "./routes/appUser.routes.js";
 
 const app = express();
 
@@ -98,7 +99,8 @@ app.use("/api/admin/users", adminSalesRoutes);
 
 // NORMAL USERS
 app.use("/api/app-users", userRoutes);     // old users
-app.use("/api/users", manageUsersRoutes);  // new usersInfo
+app.use("/api/users", appUserRoutes);      // user profiles and social
+app.use("/api/admin/users", manageUsersRoutes);  // admin management
 
 // ALTER BUSINESS
 app.use("/api/admin/alter", alterRoutes);

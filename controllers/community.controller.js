@@ -1,4 +1,5 @@
 import CommunityPost from "../models/CommunityPost.js";
+import User from "../models/User.js";
 
 const formatPost = (post) => {
     const plain = post.toObject ? post.toObject({ virtuals: true, flattenMaps: true }) : post;
@@ -202,7 +203,7 @@ export const addComment = async (req, res) => {
     }
 };
 /* ===============================
-   SEARCH POSTS
+   SEARCH POSTS & USERS
    =============================== */
 export const searchPosts = async (req, res) => {
     try {
@@ -211,22 +212,32 @@ export const searchPosts = async (req, res) => {
             return res.status(200).json({ success: true, data: { posts: [], users: [] } });
         }
 
+        // Search posts
         const posts = await CommunityPost.find({
             text: { $regex: q, $options: "i" }
         }).sort({ timestamp: -1 });
+
+        // Search users
+        const users = await User.find({
+            name: { $regex: q, $options: "i" }
+        }).limit(10).select("name avatar");
 
         return res.status(200).json({
             success: true,
             data: {
                 posts: posts.map(formatPost),
-                users: []
+                users: users.map(u => ({
+                    _id: u._id,
+                    name: u.name,
+                    avatar: u.avatar || ""
+                }))
             }
         });
     } catch (error) {
-        console.error("❌ SEARCH POSTS ERROR:", error);
+        console.error("❌ SEARCH ERROR:", error);
         return res.status(500).json({
             success: false,
-            message: "Failed to search posts",
+            message: "Failed to search",
             error: error.message,
         });
     }
