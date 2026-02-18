@@ -7,23 +7,17 @@ export const sendOtpSms = async (phone, otp) => {
       ? phone
       : `91${phone}`;
 
-    // ✅ Message MUST exactly match DLT template
-    const message = `Hi, Welcome to Sales App Your login OTP is ${otp} - TARK INNOVATIONS`;
+    // ✅ Message format as requested
+    const message = `Hi user, ${otp} is your mobile verification code login. Visit our website www.madjock.com -TARK INNOVATIONS`;
 
-    // ✅ Draft4SMS API endpoint
-    const url = "https://text.draft4sms.com/vb/apikey.php";
+    // ✅ Draft4SMS API endpoint with direct parameters
+    const apikey = process.env.DRAFT4SMS_API_KEY;
+    const senderid = "TARKIN"; // As per previous config or sender ID requirement
+    const mobile = formattedPhone;
 
-    // ✅ API params (NO encoding)
-    const params = {
-      apikey: process.env.DRAFT4SMS_API_KEY,        // 🔑 API Key
-      senderid: "TARKIN",                           // 🔤 6-char Header
-      number: formattedPhone,                      // 📱 91XXXXXXXXXX
-      message: message,                            // 📝 Plain text
-      templateid: process.env.DRAFT4SMS_TEMPLATE_ID, // 🧾 DLT Template ID
-      format: "json",
-    };
+    const smsUrl = `https://text.draft4sms.com/vb/apikey.php?apikey=${apikey}&senderid=${senderid}&number=${mobile}&message=${encodeURIComponent(message)}`;
 
-    const response = await axios.get(url, { params });
+    const response = await axios.get(smsUrl);
 
     console.log("📩 SMS API RESPONSE:", response.data);
 

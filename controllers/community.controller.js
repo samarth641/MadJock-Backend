@@ -220,7 +220,7 @@ export const searchPosts = async (req, res) => {
         // Search users
         const users = await User.find({
             name: { $regex: q, $options: "i" }
-        }).limit(10).select("name avatar");
+        }).limit(10).select("name avatar profileImageUrl");
 
         return res.status(200).json({
             success: true,
@@ -229,7 +229,7 @@ export const searchPosts = async (req, res) => {
                 users: users.map(u => ({
                     _id: u._id,
                     name: u.name,
-                    avatar: u.avatar || ""
+                    avatar: u.avatar || u.profileImageUrl || ""
                 }))
             }
         });

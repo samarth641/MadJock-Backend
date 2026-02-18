@@ -10,8 +10,16 @@ const userInfoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    followers: [{
+      type: String,
+      ref: "User",
+    }],
+    following: [{
+      type: String,
+      ref: "User",
+    }],
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 userInfoSchema.virtual('id').get(function () {
