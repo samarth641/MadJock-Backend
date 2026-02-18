@@ -50,11 +50,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    // Legacy field used by Firebase-era documents
-    profileImageUrl: {
-      type: String,
-      default: "",
-    },
     bio: {
       type: String,
       default: "",

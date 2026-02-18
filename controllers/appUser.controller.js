@@ -237,11 +237,28 @@ export const getUserBusinesses = async (req, res) => {
         const AddBusiness = mongoose.models.AddBusiness || (await import("../models/AddBusiness.js")).default;
 
         const searchIds = [userId, user.phone, user.phoneNumber, user._id?.toString()].filter(Boolean);
+        console.log(`🔍 Searching businesses for user ${userId} with IDs:`, searchIds);
 
         const businesses = await AddBusiness.find({
-            "selectedApprovedBusiness.userId": { $in: searchIds },
-            status: "approved"
+            $and: [
+                {
+                    $or: [
+                        { "selectedApprovedBusiness.userId": { $in: searchIds } },
+                        { "selectedApprovedBusiness.uid": { $in: searchIds } },
+                        { "selectedApprovedBusiness.whatsapp": { $in: searchIds } },
+                        { "selectedApprovedBusiness.contactNumber": { $in: searchIds } }
+                    ]
+                },
+                {
+                    $or: [
+                        { status: { $regex: /approved|pending/i } },
+                        { "selectedApprovedBusiness.status": { $regex: /approved|pending/i } }
+                    ]
+                }
+            ]
         }).sort({ createdAt: -1 });
+
+        console.log(`✅ Found ${businesses.length} businesses`);
 
         return res.status(200).json({ success: true, count: businesses.length, data: businesses });
     } catch (error) {

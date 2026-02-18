@@ -9,7 +9,7 @@ const communityPostSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    profileImageUrl: {
+    avatar: {
         type: String,
         default: "",
     },

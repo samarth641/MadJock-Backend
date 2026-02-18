@@ -189,7 +189,7 @@ export const addBusiness = async (req, res) => {
         startDate: "",
         selfieImage: selfieUrl, // ✅ S3 URL for selfie
         instagramLink: body.instagramLink || "",
-        userId: body.whatsapp || "",
+        userId: body.userId || body.whatsapp || "",
         id: "",
         timestamp: {
           _seconds: Math.floor(Date.now() / 1000),

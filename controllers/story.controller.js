@@ -47,9 +47,29 @@ export const createStory = async (req, res) => {
  */
 export const getStories = async (req, res) => {
     try {
-        // Fetch all stories that haven't expired
-        // MongoDB TTL index handles deletion, so we just fetch all
-        const stories = await Story.find().sort({ createdAt: -1 });
+        // Fetch stories with latest user info via aggregation
+        const stories = await Story.aggregate([
+            { $sort: { createdAt: -1 } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $addFields: {
+                    userAvatar: {
+                        $ifNull: [
+                            { $arrayElemAt: ["$userDetails.avatar", 0] },
+                            "$userAvatar" // Fallback to stored avatar
+                        ]
+                    }
+                }
+            },
+            { $project: { userDetails: 0 } }
+        ]);
 
         return res.status(200).json({
             success: true,

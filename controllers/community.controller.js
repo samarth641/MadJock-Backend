@@ -14,6 +14,7 @@ const formatPost = (post) => {
         _id: stableId,
         id: stableId,
         type: mediaType,
+        avatar: plain.avatar || "",
         media: {
             image: mediaObj.image || "",
             video: mediaObj.video || "",
@@ -29,7 +30,7 @@ const formatPost = (post) => {
 export const createPost = async (req, res) => {
     try {
         console.log("DEBUG: createPost req.body:", JSON.stringify(req.body, null, 2));
-        const { userId, userName, profileImageUrl, text, type, feeling, media, poll, location, taggedUsers } = req.body;
+        const { userId, userName, avatar, text, type, feeling, media, poll, location, taggedUsers } = req.body;
 
         if (!userId || !userName) {
             return res.status(400).json({
@@ -51,7 +52,7 @@ export const createPost = async (req, res) => {
         const newPost = new CommunityPost({
             userId,
             userName,
-            profileImageUrl,
+            avatar,
             text,
             type: type || (media?.video ? 'video' : (media?.gif ? 'image' : (media?.image ? 'image' : (formattedPoll ? 'poll' : 'text')))),
             feeling,
@@ -84,14 +85,31 @@ export const createPost = async (req, res) => {
 export const getAllPosts = async (req, res) => {
     try {
         const { page = 1, limit = 20 } = req.query;
+        const skip = (Number(page) - 1) * Number(limit);
 
-        const posts = await CommunityPost.find()
-            .sort({ timestamp: -1 }) // Newest first
-            .skip((page - 1) * limit)
-            .limit(Number(limit));
+        const posts = await CommunityPost.aggregate([
+            { $sort: { timestamp: -1 } },
+            { $skip: skip },
+            { $limit: Number(limit) },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $addFields: {
+                    avatar: { $ifNull: [{ $arrayElemAt: ["$userDetails.avatar", 0] }, "$avatar"] }
+                }
+            },
+            { $project: { userDetails: 0 } }
+        ]);
 
         const total = await CommunityPost.countDocuments();
 
+        // formatPost handles aggregation results too
         return res.status(200).json({
             success: true,
             count: posts.length,
@@ -212,15 +230,30 @@ export const searchPosts = async (req, res) => {
             return res.status(200).json({ success: true, data: { posts: [], users: [] } });
         }
 
-        // Search posts
-        const posts = await CommunityPost.find({
-            text: { $regex: q, $options: "i" }
-        }).sort({ timestamp: -1 });
+        // Search posts with latest avatar
+        const posts = await CommunityPost.aggregate([
+            { $match: { text: { $regex: q, $options: "i" } } },
+            { $sort: { timestamp: -1 } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $addFields: {
+                    avatar: { $ifNull: [{ $arrayElemAt: ["$userDetails.avatar", 0] }, "$profileImageUrl"] }
+                }
+            },
+            { $project: { userDetails: 0 } }
+        ]);
 
         // Search users
         const users = await User.find({
             name: { $regex: q, $options: "i" }
-        }).limit(10).select("name avatar profileImageUrl");
+        }).limit(10).select("name avatar");
 
         return res.status(200).json({
             success: true,
@@ -229,7 +262,7 @@ export const searchPosts = async (req, res) => {
                 users: users.map(u => ({
                     _id: u._id,
                     name: u.name,
-                    avatar: u.avatar || u.profileImageUrl || ""
+                    avatar: u.avatar || ""
                 }))
             }
         });
