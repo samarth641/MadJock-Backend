@@ -256,7 +256,11 @@ export const getUserBusinesses = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { name, bio, location, avatar } = req.body;
+        const {
+            name, bio, location, avatar,
+            gender, dob, aadhaarNumber, aadhaarImage,
+            pincode, email, country
+        } = req.body;
 
         const user = await findUserById(userId);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
@@ -266,6 +270,14 @@ export const updateUserProfile = async (req, res) => {
         if (bio !== undefined) update.bio = bio;
         if (location !== undefined) update.location = location;
         if (avatar) update.avatar = avatar;
+
+        if (gender !== undefined) update.gender = gender;
+        if (dob !== undefined) update.dob = dob;
+        if (aadhaarNumber !== undefined) update.aadhaarNumber = aadhaarNumber;
+        if (aadhaarImage !== undefined) update.aadhaarImage = aadhaarImage;
+        if (pincode !== undefined) update.pincode = pincode;
+        if (email !== undefined) update.email = email;
+        if (country !== undefined) update.country = country;
 
         await updateUser(userId, { $set: update });
 

@@ -63,6 +63,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    country: {
+      type: String,
+      default: "India",
+    },
+    pincode: {
+      type: String,
+      default: "",
+    },
+    aadhaarNumber: {
+      type: String,
+      default: "",
+    },
+    aadhaarImage: {
+      type: String,
+      default: "",
+    },
     gender: {
       type: String,
       enum: ["Male", "Female", "Other", ""],
