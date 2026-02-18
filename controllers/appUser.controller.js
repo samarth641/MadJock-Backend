@@ -236,29 +236,35 @@ export const getUserBusinesses = async (req, res) => {
 
         const AddBusiness = mongoose.models.AddBusiness || (await import("../models/AddBusiness.js")).default;
 
-        const searchIds = [userId, user.phone, user.phoneNumber, user._id?.toString()].filter(Boolean);
-        console.log(`🔍 Searching businesses for user ${userId} with IDs:`, searchIds);
+        const searchIds = [
+            userId,
+            user.phone,
+            user.phoneNumber,
+            user._id?.toString(),
+            user.id?.toString()
+        ].filter(Boolean);
+
+        console.log(`🔍 [DEBUG] Searching businesses for user ${userId}`);
+        console.log(`🔍 [DEBUG] Search IDs:`, searchIds);
 
         const businesses = await AddBusiness.find({
-            $and: [
-                {
-                    $or: [
-                        { "selectedApprovedBusiness.userId": { $in: searchIds } },
-                        { "selectedApprovedBusiness.uid": { $in: searchIds } },
-                        { "selectedApprovedBusiness.whatsapp": { $in: searchIds } },
-                        { "selectedApprovedBusiness.contactNumber": { $in: searchIds } }
-                    ]
-                },
-                {
-                    $or: [
-                        { status: { $regex: /approved|pending/i } },
-                        { "selectedApprovedBusiness.status": { $regex: /approved|pending/i } }
-                    ]
-                }
+            $or: [
+                { "selectedApprovedBusiness.userId": { $in: searchIds } },
+                { "selectedApprovedBusiness.uid": { $in: searchIds } },
+                { "selectedApprovedBusiness.whatsapp": { $in: searchIds } },
+                { "selectedApprovedBusiness.contactNumber": { $in: searchIds } },
+                // Also check top-level if they exist (legacy/future proofing)
+                { userId: { $in: searchIds } },
+                { uid: { $in: searchIds } }
             ]
         }).sort({ createdAt: -1 });
 
-        console.log(`✅ Found ${businesses.length} businesses`);
+        console.log(`✅ [DEBUG] Found ${businesses.length} businesses for search criteria.`);
+        if (businesses.length > 0) {
+            businesses.forEach((b, i) => {
+                console.log(`   [${i}] ID: ${b._id}, Status: ${b.status}, Nested Status: ${b.selectedApprovedBusiness?.status}`);
+            });
+        }
 
         return res.status(200).json({ success: true, count: businesses.length, data: businesses });
     } catch (error) {

@@ -197,10 +197,14 @@ const SelectedApprovedBusinessSchema = new mongoose.Schema(
       default: "",
     },
 
-    gstDoc: {
+    businessDocumentUrl: {
       type: String,
-      enum: ["YES", "NO"],
-      default: "NO",
+      default: "",
+    },
+
+    gstDoc: {
+      type: Boolean,
+      default: false,
     },
 
     // 🔥 ADDED (old JSON uses gstCertificate boolean)
@@ -209,10 +213,14 @@ const SelectedApprovedBusinessSchema = new mongoose.Schema(
       default: false,
     },
 
-    businessDoc: {
+    gstCertificateUrl: {
       type: String,
-      enum: ["YES", "NO"],
-      default: "NO",
+      default: "",
+    },
+
+    businessDoc: {
+      type: Boolean,
+      default: false,
     },
 
     // 🔥 ADDED (old JSON uses businessDocument boolean)

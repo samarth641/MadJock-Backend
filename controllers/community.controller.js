@@ -30,7 +30,7 @@ const formatPost = (post) => {
 export const createPost = async (req, res) => {
     try {
         console.log("DEBUG: createPost req.body:", JSON.stringify(req.body, null, 2));
-        const { userId, userName, avatar, text, type, feeling, media, poll, location, taggedUsers } = req.body;
+        const { userId, userName, avatar, text, type, feeling, media, poll, location, taggedUsers, autoLocation } = req.body;
 
         if (!userId || !userName) {
             return res.status(400).json({
@@ -59,7 +59,11 @@ export const createPost = async (req, res) => {
             media,
             poll: formattedPoll,
             location,
-            taggedUsers
+            taggedUsers,
+            autoLocation: autoLocation ? {
+                type: 'Point',
+                coordinates: [autoLocation.lng, autoLocation.lat]
+            } : undefined
         });
 
         const savedPost = await newPost.save();
@@ -84,30 +88,71 @@ export const createPost = async (req, res) => {
    =============================== */
 export const getAllPosts = async (req, res) => {
     try {
-        const { page = 1, limit = 20 } = req.query;
+        const { page = 1, limit = 20, lat, lng, radius = 50000 } = req.query; // Default radius 50km
         const skip = (Number(page) - 1) * Number(limit);
 
-        const posts = await CommunityPost.aggregate([
-            { $sort: { timestamp: -1 } },
-            { $skip: skip },
-            { $limit: Number(limit) },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "_id",
-                    as: "userDetails"
-                }
-            },
-            {
-                $addFields: {
-                    avatar: { $ifNull: [{ $arrayElemAt: ["$userDetails.avatar", 0] }, "$avatar"] }
-                }
-            },
-            { $project: { userDetails: 0 } }
-        ]);
+        const getPostsAtRadius = async (r) => {
+            const query = {};
+            if (lat && lng && r > 0) {
+                const radiusInRadians = r / 6378100;
+                query.autoLocation = {
+                    $geoWithin: {
+                        $centerSphere: [[parseFloat(lng), parseFloat(lat)], radiusInRadians]
+                    }
+                };
+            }
+            return await CommunityPost.aggregate([
+                { $match: query },
+                { $sort: { timestamp: -1 } },
+                { $skip: skip },
+                { $limit: Number(limit) },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userId",
+                        foreignField: "_id",
+                        as: "userDetails"
+                    }
+                },
+                {
+                    $addFields: {
+                        avatar: { $ifNull: [{ $arrayElemAt: ["$userDetails.avatar", 0] }, "$avatar"] }
+                    }
+                },
+                { $project: { userDetails: 0 } }
+            ]);
+        };
 
-        const total = await CommunityPost.countDocuments();
+        let posts = [];
+        let radii = [50000, 500000, 3000000, 0]; // City (50km), State (500km), Country (3000km), Global (0)
+        let usedRadius = 0;
+
+        if (lat && lng) {
+            for (let r of radii) {
+                posts = await getPostsAtRadius(r);
+                if (posts.length > 0) {
+                    usedRadius = r;
+                    break;
+                }
+            }
+        } else {
+            posts = await getPostsAtRadius(0);
+        }
+
+        const getPostsCountAtRadius = async (r) => {
+            const query = {};
+            if (lat && lng && r > 0) {
+                const radiusInRadians = r / 6378100;
+                query.autoLocation = {
+                    $geoWithin: {
+                        $centerSphere: [[parseFloat(lng), parseFloat(lat)], radiusInRadians]
+                    }
+                };
+            }
+            return await CommunityPost.countDocuments(query);
+        };
+
+        const total = await getPostsCountAtRadius(usedRadius);
 
         // formatPost handles aggregation results too
         return res.status(200).json({

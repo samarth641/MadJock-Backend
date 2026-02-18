@@ -100,6 +100,7 @@ export const getAllBusinesses = async (req, res) => {
 export const addBusiness = async (req, res) => {
   try {
     const body = { ...req.body };
+    console.log("DEBUG: Add business payload:", JSON.stringify(body, null, 2));
 
     // 🔥 IMPORTANT: if frontend sends _id, REMOVE IT
     delete body._id;
@@ -109,18 +110,16 @@ export const addBusiness = async (req, res) => {
     if (!businessName || !ownerName || !whatsapp) {
       return res.status(400).json({
         success: false,
-        message: "Required fields missing",
+        message: "Required fields missing (businessName, ownerName, whatsapp)",
       });
     }
-
-    // ❌ DUPLICATE CHECK REMOVED ❌
-    // Now same WhatsApp can add multiple businesses
 
     // 🔥 Generate simple id like old structure (string)
     const generatedId = Date.now().toString();
 
     // 📁 Extract S3 file URLs from uploaded files
     const uploadedFiles = req.files || {};
+    console.log("DEBUG: Uploaded files:", Object.keys(uploadedFiles));
 
     // Get image URLs
     const imageUrls = uploadedFiles.images
@@ -128,28 +127,54 @@ export const addBusiness = async (req, res) => {
       : [];
 
     // Get logo URL
-    const logoUrl = uploadedFiles.logo
+    const logoUrl = uploadedFiles.logo && uploadedFiles.logo[0]
       ? uploadedFiles.logo[0].location
       : "";
 
     // Get banner URL
-    const bannerUrl = uploadedFiles.banner
+    const bannerUrl = uploadedFiles.banner && uploadedFiles.banner[0]
       ? uploadedFiles.banner[0].location
       : "";
 
     // Get selfie URL
-    const selfieUrl = uploadedFiles.selfie
+    const selfieUrl = uploadedFiles.selfie && uploadedFiles.selfie[0]
       ? uploadedFiles.selfie[0].location
       : "";
 
     // Get document URLs
-    const businessDocUrl = uploadedFiles.businessDoc
+    const businessDocUrl = uploadedFiles.businessDoc && uploadedFiles.businessDoc[0]
       ? uploadedFiles.businessDoc[0].location
       : "";
 
-    const gstDocUrl = uploadedFiles.gstDoc
+    const gstDocUrl = uploadedFiles.gstDoc && uploadedFiles.gstDoc[0]
       ? uploadedFiles.gstDoc[0].location
       : "";
+
+    // Helper to parse JSON arrays or fallback
+    const parseArray = (val) => {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch (e) {
+        return [val];
+      }
+    };
+
+    // Helper for numeric fields
+    const parseNumber = (val) => {
+      if (!val || val === "") return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    };
+
+    // Helper for date fields
+    const parseDate = (val) => {
+      if (!val || val === "" || val === "null") return null;
+      const date = new Date(val);
+      return isNaN(date.getTime()) ? null : date;
+    };
 
     // 🔥 Build EXACT OLD STRUCTURE (WITHOUT TOUCHING MONGO _id)
     const doc = {
@@ -162,22 +187,21 @@ export const addBusiness = async (req, res) => {
         businessImages: imageUrls,
         twitterLink: body.twitterLink || "",
         businessLocation: body.address || "",
-        generatedid: generatedId, // ✅ OLD STYLE STRING ID HERE
-        businessDocument: body.businessDoc === "YES",
-        businessDocumentUrl: businessDocUrl, // ✅ S3 URL for business document
-        businessLogo: logoUrl, // ✅ S3 URL for logo
-        websiteLink: body.websiteLink ? [body.websiteLink] : [],
-        streetAddresses: body.streetAddresses?.length
-          ? body.streetAddresses
-          : [body.address || ""],
-        businessBanner: bannerUrl, // ✅ S3 URL for banner
+        generatedid: generatedId,
+        businessDocument: body.businessDocToggle === "YES" || !!businessDocUrl,
+        businessDoc: body.businessDocToggle === "YES" || !!businessDocUrl,
+        businessDocumentUrl: businessDocUrl,
+        businessLogo: logoUrl,
+        websiteLink: parseArray(body.websiteLink),
+        streetAddresses: parseArray(body.streetAddresses),
+        businessBanner: bannerUrl,
         ownerName: body.ownerName || "",
         state: body.state || "",
         businessDescription: body.description || "",
         city: body.city || "",
-        uid: "",
+        uid: body.userId || "",
         pinCode: body.pincode || "",
-        establishedIn: body.establishedIn || "",
+        establishedIn: parseNumber(body.establishedIn),
         payment: false,
         paymentId: "",
         status: "pending",
@@ -186,8 +210,8 @@ export const addBusiness = async (req, res) => {
         twitterAccount: body.twitter === "YES",
         subscription: [],
         instagramProfileLink: body.instagramLink || "",
-        startDate: "",
-        selfieImage: selfieUrl, // ✅ S3 URL for selfie
+        startDate: parseDate(body.startDate),
+        selfieImage: selfieUrl,
         instagramLink: body.instagramLink || "",
         userId: body.userId || body.whatsapp || "",
         id: "",
@@ -198,20 +222,22 @@ export const addBusiness = async (req, res) => {
         contactNumber: body.whatsapp || "",
         instagramProfile: body.instagram === "YES",
         location: {
-          latitude: 0,
-          longitude: 0,
+          latitude: parseNumber(body.latitude) || 0,
+          longitude: parseNumber(body.longitude) || 0,
         },
         facebookProfile: body.facebook === "YES",
         businessCategory: body.businessCategory || "",
         website: body.website === "YES",
-        gstCertificate: body.gstDoc === "YES",
-        gstCertificateUrl: gstDocUrl, // ✅ S3 URL for GST certificate
-        expiryDate: "",
+        gstCertificate: body.gstDocToggle === "YES" || !!gstDocUrl,
+        gstDoc: body.gstDocToggle === "YES" || !!gstDocUrl,
+        gstCertificateUrl: gstDocUrl,
+        expiryDate: parseDate(body.expiryDate),
         facebookLink: body.facebookLink || "",
         businessName: body.businessName || "",
       },
     };
 
+    console.log("DEBUG: Saving document:", JSON.stringify(doc, null, 2));
     const business = new AddBusiness(doc);
     await business.save();
 
@@ -221,10 +247,11 @@ export const addBusiness = async (req, res) => {
       data: business,
     });
   } catch (error) {
-    console.error("❌ Add business error:", error);
+    console.error("❌ Add business error details:", error);
     res.status(500).json({
       success: false,
       message: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };

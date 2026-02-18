@@ -74,8 +74,22 @@ const communityPostSchema = new mongoose.Schema({
     timestamp: {
         type: Date,
         default: Date.now,
+    },
+    autoLocation: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            default: [0, 0]
+        }
     }
 }, { timestamps: true });
+
+// Add 2dsphere index for geolocation queries
+communityPostSchema.index({ autoLocation: "2dsphere" });
 
 // Ensure virtuals are included in JSON output
 communityPostSchema.set('toJSON', { virtuals: true, flattenMaps: true });
