@@ -21,18 +21,18 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
+
+    // ─── CONTACT ───────────────────────────────────────────────────────────────
     phone: {
       type: String,
       unique: true,
-      required: false, // Changed to false to handle documents that might use 'phoneNumber'
+      sparse: true, // allow documents without phone (legacy Firebase users)
     },
-
-    name: {
+    // Legacy field used by Firebase-era documents
+    phoneNumber: {
       type: String,
-      trim: true,
-      default: "",
+      sparse: true,
     },
-
     email: {
       type: String,
       trim: true,
@@ -40,73 +40,18 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🆕 SALES ID (ASSIGNED BY ADMIN AFTER APPROVAL)
-    salesId: {
-      type: String,
-      unique: true,
-      sparse: true, // MUST be sparse to allow multiple missing values during signup
-      trim: true,
-    },
-
-    // 🆕 DATE OF BIRTH
-    dob: {
-      type: mongoose.Schema.Types.Mixed, // handle both String "YYYY-MM-DD" and Firebase Timestamp objects
-      default: "",
-    },
-
-    // 🆕 EDUCATION DOCUMENTS
-    education: {
-      tenth: { type: String, default: "" },
-      twelfth: { type: String, default: "" },
-      ug: { type: String, default: "" },
-      pg: { type: String, default: "" },
-    },
-
-    // 🆕 EXPERIENCE LIST
-    experiences: {
-      type: [experienceSchema],
-      default: [],
-    },
-
-    // 🔹 ROLE: user | admin | sales
-    role: {
-      type: String,
-      enum: ["user", "admin", "sales"],
-      default: "user",
-    },
-
-    // 🆕 GENDER
-    gender: {
-      type: String,
-      enum: ["Male", "Female", "Other"],
-      default: "Male",
-    },
-
-    // 🆕 REFERRAL CODE
-    referralCode: {
+    // ─── PROFILE ───────────────────────────────────────────────────────────────
+    name: {
       type: String,
       trim: true,
       default: "",
     },
-
-    // 🆕 VERIFICATION STATUS
-    emailVerified: {
-      type: Boolean,
-      default: false,
-    },
-    phoneVerified: {
-      type: Boolean,
-      default: false,
-    },
-
-    // 🔹 APPROVAL STATUS (for sales persons)
-    approved: {
-      type: Boolean,
-      default: false, // new sales person = pending
-    },
-
-    // 🆕 SOCIAL FEATURES
     avatar: {
+      type: String,
+      default: "",
+    },
+    // Legacy field used by Firebase-era documents
+    profileImageUrl: {
       type: String,
       default: "",
     },
@@ -118,14 +63,70 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    followers: [{
+    gender: {
       type: String,
-      ref: "User",
-    }],
-    following: [{
+      enum: ["Male", "Female", "Other", ""],
+      default: "",
+    },
+    dob: {
+      // handle both String "YYYY-MM-DD" and legacy Firebase Timestamp objects
+      type: mongoose.Schema.Types.Mixed,
+      default: "",
+    },
+
+    // ─── SOCIAL ────────────────────────────────────────────────────────────────
+    followers: [{ type: String }],
+    following: [{ type: String }],
+
+    // ─── ADMIN / SALES ─────────────────────────────────────────────────────────
+    role: {
       type: String,
-      ref: "User",
-    }],
+      enum: ["user", "admin", "sales"],
+      default: "user",
+    },
+    salesId: {
+      type: String,
+      unique: true,
+      sparse: true, // allow multiple docs without salesId
+      trim: true,
+    },
+    approved: {
+      type: Boolean,
+      default: false,
+    },
+    blocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ─── VERIFICATION ──────────────────────────────────────────────────────────
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ─── MISC ──────────────────────────────────────────────────────────────────
+    referralCode: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    education: {
+      tenth: { type: String, default: "" },
+      twelfth: { type: String, default: "" },
+      ug: { type: String, default: "" },
+      pg: { type: String, default: "" },
+    },
+    experiences: {
+      type: [experienceSchema],
+      default: [],
+    },
+
+    // ─── TIMESTAMPS (Mixed to handle legacy Firebase Timestamps) ───────────────
     createdAt: {
       type: mongoose.Schema.Types.Mixed,
     },
@@ -133,8 +134,16 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
     },
   },
-  { strict: false }
+  {
+    strict: false, // allow extra fields from legacy documents to pass through
+  }
 );
 
-// ✅ DEFAULT EXPORT - Pointing to usersInfo to pick up existing users
-export default mongoose.model("User", userSchema, "usersInfo");
+// Virtual so that `user.id` returns the string version of `_id`
+userSchema.virtual("id").get(function () {
+  return this._id?.toString();
+});
+userSchema.set("toJSON", { virtuals: true });
+
+// ✅ Points to the unified `users` collection
+export default mongoose.model("User", userSchema, "users");

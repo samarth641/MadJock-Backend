@@ -1,8 +1,6 @@
+import 'dotenv/config';
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
-
-dotenv.config();
 
 // ================= DB  =================
 import connectDB from "./config/db.js";
@@ -39,6 +37,7 @@ import adminSalesRoutes from "./routes/admin.sales.routes.js";
 import sliderRoutes from "./routes/slider.routes.js";
 import communityRoutes from "./routes/community.routes.js";
 import appUserRoutes from "./routes/appUser.routes.js";
+import storyRoutes from "./routes/story.routes.js";
 
 const app = express();
 
@@ -108,6 +107,7 @@ app.use("/api/admin/alter", alterRoutes);
 // SLIDER IMAGES
 app.use("/api/sliders", sliderRoutes);
 app.use("/api/community", communityRoutes);
+app.use("/api/stories", storyRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
