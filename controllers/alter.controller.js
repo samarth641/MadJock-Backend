@@ -7,7 +7,7 @@ import Category from "../models/addCategory.model.js";
  */
 export const getServices = async (req, res) => {
   try {
-    const data = await Service.find().sort({ name: 1 });
+    const data = await Service.find().sort({ service_name: 1 });
 
     res.status(200).json({
       success: true,
@@ -99,18 +99,47 @@ export const editCategory = async (req, res) => {
     }
 
     // 🔥 Use the model's collection directly if needed, or rely on Mixed type schema
-    const data = await Category.findOneAndUpdate({ _id: id }, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    // 🔧 Super-Robust: We'll use the native collection to avoid Mongoose casting issues
+    const collection = mongoose.connection.db.collection('add-category');
 
-    if (!data) {
+    // Search for both string and ObjectIdversions
+    const searchConditions = [{ _id: id }];
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      searchConditions.push({ _id: new mongoose.Types.ObjectId(id) });
+    }
+
+    console.log("🔍 Debug: Searching for Category ID:", id, "Conditions:", JSON.stringify(searchConditions));
+
+    const rawData = await collection.findOne({ $or: searchConditions });
+
+    if (!rawData) {
+      console.log("❌ Category not found in native collection!");
+      // Log first 3 categories for context
+      const context = await collection.find({}).limit(3).toArray();
+      console.log("📋 DB Samples:", JSON.stringify(context.map(c => ({ id: c._id, type: typeof c._id }))));
+
       return res
         .status(404)
         .json({ success: false, message: "Category not found" });
     }
 
-    res.status(200).json({ success: true, data });
+    // Since we found it via native collection, we'll update it via native collection too
+    const finalUpdate = { $set: {} };
+    if (name) finalUpdate.$set.name = name;
+    if (req.file) {
+      finalUpdate.$set.icon = req.file.location;
+    }
+    if (featured !== undefined) {
+      finalUpdate.$set.featured = featured === "true" || featured === true;
+    }
+
+    await collection.updateOne({ _id: rawData._id }, finalUpdate);
+
+    res.status(200).json({
+      success: true,
+      message: "Updated successfully",
+      data: { ...rawData, ...finalUpdate.$set }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -127,14 +156,14 @@ export const addService = async (req, res) => {
         .json({ success: false, message: "Name required" });
     }
 
-    const exists = await Service.findOne({ name });
+    const exists = await Service.findOne({ service_name: name });
     if (exists) {
       return res
         .status(400)
         .json({ success: false, message: "Service already exists" });
     }
 
-    const data = await Service.create({ name });
+    const data = await Service.create({ service_name: name });
 
     res.status(201).json({ success: true, data });
   } catch (error) {

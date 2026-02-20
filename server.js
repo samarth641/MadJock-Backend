@@ -38,6 +38,7 @@ import sliderRoutes from "./routes/slider.routes.js";
 import communityRoutes from "./routes/community.routes.js";
 import appUserRoutes from "./routes/appUser.routes.js";
 import storyRoutes from "./routes/story.routes.js";
+import withdrawalRoutes from "./routes/withdrawal.routes.js";
 
 const app = express();
 
@@ -108,6 +109,7 @@ app.use("/api/admin/alter", alterRoutes);
 app.use("/api/sliders", sliderRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/api/stories", storyRoutes);
+app.use("/api/admin/withdrawals", withdrawalRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {

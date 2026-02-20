@@ -1,5 +1,6 @@
 import express from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import {
   sendOtp,
   verifyOtp,
@@ -74,9 +75,16 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    const token = jwt.sign(
+      { id: admin._id, email: admin.email, role: "admin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      token,
       user: {
         id: admin._id,
         name: admin.name,
@@ -124,9 +132,16 @@ router.post("/admin/login", async (req, res) => {
       });
     }
 
+    const token = jwt.sign(
+      { id: admin._id, email: admin.email, role: "admin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
     return res.status(200).json({
       success: true,
       message: "Admin login successful",
+      token,
       user: {
         id: admin._id,
         name: admin.name,

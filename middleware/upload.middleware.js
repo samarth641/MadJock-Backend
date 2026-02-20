@@ -82,6 +82,8 @@ const s3Storage = multerS3({
             folder = "sliders";
         } else if (file.fieldname === "categoryIcon") {
             folder = "category-icons";
+        } else if (file.fieldname === "serviceIcon") {
+            folder = "service-icons";
         } else if (file.fieldname === "communityMedia") {
             folder = "community";
         }
@@ -98,6 +100,15 @@ export const uploadCategoryIcon = multer({
         fileSize: 5 * 1024 * 1024, // 5MB limit for icons
     },
 }).single("categoryIcon");
+
+// Multer upload configuration for service icons
+export const uploadServiceIcon = multer({
+    storage: s3Storage,
+    fileFilter: imageFileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit for icons
+    },
+}).single("serviceIcon");
 
 // Multer upload configuration for sliders
 export const uploadSliderImage = multer({

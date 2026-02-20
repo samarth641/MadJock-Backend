@@ -1,10 +1,10 @@
 {
     "info": {
         "name": "MadJock Backend API",
-        "description": "Complete API documentation for MadJock Sales Backend with S3 file upload support",
+        "description": "Complete API documentation for MadJock Sales Backend with S3 file upload support and social features",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "_postman_id": "madjock-backend-api",
-        "version": "1.0.0"
+        "version": "1.1.0"
     },
     "variable": [
         {
@@ -71,6 +71,90 @@
                             ]
                         },
                         "description": "Verify OTP sent to user's phone"
+                    }
+                },
+                {
+                    "name": "Check User Exists",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phoneNumber\": \"9876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/check-user",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "check-user"
+                            ]
+                        },
+                        "description": "Check if user exists in the database"
+                    }
+                },
+                {
+                    "name": "Send Email OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/send-email-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "send-email-otp"
+                            ]
+                        },
+                        "description": "Send OTP to user's email address"
+                    }
+                },
+                {
+                    "name": "Verify Email OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/verify-email-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "verify-email-otp"
+                            ]
+                        },
+                        "description": "Verify OTP sent to user's email"
                     }
                 },
                 {
@@ -184,6 +268,571 @@
                             ]
                         },
                         "description": "Admin login (no approval check)"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "App User Profiles & Social",
+            "item": [
+                {
+                    "name": "Get User Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/profile/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "profile",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        },
+                        "description": "Get detailed user profile including posts and follower counts"
+                    }
+                },
+                {
+                    "name": "Update User Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Updated\",\n  \"city\": \"Pune\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/users/profile/:userId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "profile",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Follow User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"currentUserID\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/users/follow/:targetUserId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "follow",
+                                ":targetUserId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "targetUserId",
+                                    "value": "targetUserID"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Unfollow User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"currentUserID\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/users/unfollow/:targetUserId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "unfollow",
+                                ":targetUserId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "targetUserId",
+                                    "value": "targetUserID"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Posts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/posts/:userId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "posts",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Businesses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/businesses/:userId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "businesses",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Followers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/followers/:userId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "followers",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Following",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/following/:userId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "following",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "698ebf1c30f3e739ac507bbe"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Community",
+            "item": [
+                {
+                    "name": "Upload Community Media",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "media",
+                                    "type": "file",
+                                    "src": "/path/to/media.jpg"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/community/upload",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "upload"
+                            ]
+                        },
+                        "description": "Upload images/videos for community posts to S3"
+                    }
+                },
+                {
+                    "name": "Create Post",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"698ebf1c30f3e739ac507bbe\",\n  \"content\": \"Hello world!\",\n  \"media\": [],\n  \"type\": \"post\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/community/create",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "create"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Posts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/community/all",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "all"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Posts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/community/search?q=keyword",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "keyword"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Like Post",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"698ebf1c30f3e739ac507bbe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/community/like/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "like",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "postID"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Vote on Poll",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"698ebf1c30f3e739ac507bbe\",\n  \"optionIndex\": 0\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/community/vote/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "vote",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "postID"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Comment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"698ebf1c30f3e739ac507bbe\",\n  \"content\": \"Nice post!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/community/comment/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "community",
+                                "comment",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "postID"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Stories",
+            "item": [
+                {
+                    "name": "Get Stories",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/stories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "stories"
+                            ]
+                        },
+                        "description": "Get all active stories"
+                    }
+                },
+                {
+                    "name": "Create Story",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": \"698ebf1c30f3e739ac507bbe\",\n  \"mediaUrl\": \"https://...\",\n  \"type\": \"image\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/stories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "stories"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Sliders (Billboards)",
+            "item": [
+                {
+                    "name": "Get Sliders",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/sliders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "sliders"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Slider Image",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": "/path/to/slider.jpg"
+                                },
+                                {
+                                    "key": "title",
+                                    "value": "New Collection",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/sliders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "sliders"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Slider",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/sliders/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "sliders",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "sliderID"
+                                }
+                            ]
+                        }
                     }
                 }
             ]
@@ -529,7 +1178,7 @@
             ]
         },
         {
-            "name": "Sales Person Management",
+            "name": "Sales Person Management (Admin)",
             "item": [
                 {
                     "name": "Get Pending Sales Persons",
@@ -628,7 +1277,7 @@
             ]
         },
         {
-            "name": "Service Management",
+            "name": "Service Inquiries (Admin)",
             "item": [
                 {
                     "name": "Get All Service Inquiries",
@@ -734,7 +1383,7 @@
             ]
         },
         {
-            "name": "Admin Users",
+            "name": "Admin User Management (Settings)",
             "item": [
                 {
                     "name": "Get All Admins",
@@ -836,7 +1485,7 @@
             ]
         },
         {
-            "name": "App Users Management",
+            "name": "App User Management (Admin)",
             "item": [
                 {
                     "name": "Get All App Users",
@@ -844,12 +1493,13 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/users/all",
+                            "raw": "{{base_url}}/api/admin/users/all",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
+                                "admin",
                                 "users",
                                 "all"
                             ]
@@ -863,12 +1513,13 @@
                         "method": "PUT",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/users/:id/block",
+                            "raw": "{{base_url}}/api/admin/users/:id/block",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
+                                "admin",
                                 "users",
                                 ":id",
                                 "block"
@@ -889,12 +1540,13 @@
                         "method": "PUT",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/users/:id/unblock",
+                            "raw": "{{base_url}}/api/admin/users/:id/unblock",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
+                                "admin",
                                 "users",
                                 ":id",
                                 "unblock"
@@ -915,12 +1567,13 @@
                         "method": "DELETE",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/users/:id",
+                            "raw": "{{base_url}}/api/admin/users/:id",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
+                                "admin",
                                 "users",
                                 ":id"
                             ],

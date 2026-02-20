@@ -46,3 +46,24 @@ export const getFeaturedAds = async (req, res) => {
     });
   }
 };
+
+export const updateFeaturedAdStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    await FeaturedAd.findByIdAndUpdate(id, { status });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const deleteFeaturedAd = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await FeaturedAd.findByIdAndDelete(id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

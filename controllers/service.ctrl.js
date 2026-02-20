@@ -17,10 +17,13 @@ export const getAll = async (req, res) => {
    =============================== */
 export const addOne = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, service_ID } = req.body;
+    const service_icon = req.file ? req.file.location : null;
 
     const service = await Service.create({
       service_name: name,
+      service_ID,
+      service_icon,
     });
 
     res.json({ success: true, data: service });
@@ -40,11 +43,17 @@ export const updateOne = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid ID format" });
     }
 
-    const { name } = req.body;
-
-    await Service.findByIdAndUpdate(id, {
+    const { name, service_ID } = req.body;
+    const updateData = {
       service_name: name,
-    });
+      service_ID,
+    };
+
+    if (req.file) {
+      updateData.service_icon = req.file.location;
+    }
+
+    await Service.findByIdAndUpdate(id, updateData);
 
     res.json({ success: true });
   } catch (err) {

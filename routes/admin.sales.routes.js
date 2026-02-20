@@ -4,6 +4,7 @@ import {
   getApprovedSalesPersons,   // approved
   approveSalesPerson,
   rejectSalesPerson,
+  deleteSalesPerson,
   requestSalesPerson,
 } from "../controllers/admin.sales.controller.js";
 
@@ -33,5 +34,10 @@ router.put("/:id/approve", approveSalesPerson);
 // REJECT USER
 // ===============================
 router.put("/:id/reject", rejectSalesPerson);
+
+// ===============================
+// DELETE USER
+// ===============================
+router.delete("/:id", deleteSalesPerson);
 
 export default router;
